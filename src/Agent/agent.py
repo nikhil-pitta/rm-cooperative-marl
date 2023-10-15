@@ -1,8 +1,14 @@
 from reward_machines.sparse_reward_machine import SparseRewardMachine
 from tester.tester import Tester
+from infrastructure.replay_buffer import ReplayBuffer
+import infrastructure.pytorch_utils as ptu
 import numpy as np
 import random, time, os
 import matplotlib.pyplot as plt
+import torch
+import torch.nn as nn
+from torch.distributions import MultivariateNormal
+from torch.distributions import Categorical
 
 class Agent:
     """
@@ -16,7 +22,7 @@ class Agent:
     state when starting a new episode by calling self.initialize_world() and 
     self.initialize_reward_machine().
     """
-    def __init__(self, rm_file, s_i, num_states, actions, agent_id):
+    def __init__(self, rm_file, s_i, num_states, actions, agent_id, batch_size, buffer_size):
         """
         Initialize agent object.
 
@@ -45,6 +51,32 @@ class Agent:
         self.q = np.zeros([num_states, len(self.rm.U), len(self.actions)])
         self.total_local_reward = 0
         self.is_task_complete = 0
+        self.batch_size = batch_size
+        self.target_network_update_period = 100
+
+        self.buffer = ReplayBuffer(buffer_size)
+
+
+        self.Q = ptu.build_mlp(
+            input_size=2,
+            output_size = len(self.actions),
+            n_layers=2,
+            size=64,
+        )
+        self.Q_target = ptu.build_mlp(
+            input_size=2,
+            output_size = len(self.actions),
+            n_layers=2,
+            size=64,
+        )
+        
+        self.optimizer = torch.optim.Adam([
+                        {'params': self.Q.parameters(), 'lr': 0.001},
+                    ])
+
+        self.update_target_network()
+
+        self.loss = nn.MSELoss()
 
     def reset_state(self):
         """
@@ -112,7 +144,7 @@ class Agent:
 
         return self.s, a
 
-    def update_agent(self, s_new, a, reward, label, learning_params, update_q_function=True):
+    def update_agent(self, s_new, a, reward, label, learning_params, step, update_q_function=True):
         """
         Update the agent's state, q-function, and reward machine after 
         interacting with the environment.
@@ -142,7 +174,7 @@ class Agent:
         self.total_local_reward += reward
 
         if update_q_function == True:
-            self.update_q_function(self.s, s_new, u_start, self.u, a, reward, learning_params)
+            self.update_q_function(self.s, s_new, u_start, self.u, a, reward, learning_params, step)
 
         # Moving to the next state
         self.s = s_new
@@ -151,7 +183,7 @@ class Agent:
             # Completed task. Set flag.
             self.is_task_complete = 1
 
-    def update_q_function(self, s, s_new, u, u_new, a, reward, learning_params):
+    def update_q_function(self, s, s_new, u, u_new, a, reward, learning_params, step):
         """
         Update the q function using the action, states, and reward value.
 
@@ -176,4 +208,43 @@ class Agent:
         gamma = learning_params.gamma
 
         # Bellman update
-        self.q[s][u][a] = (1-alpha)*self.q[s][u][a] + alpha*(reward + gamma*np.amax(self.q[s_new][u_new]))
+        # self.q[s][u][a] = (1-alpha)*self.q[s][u][a] + alpha*(reward + gamma*np.amax(self.q[s_new][u_new]))
+
+        #Q-function update
+        states, rm_states, actions, rewards, next_states, next_rm_states = self.buffer.sample(self.batch_size)
+        states, rm_states, actions, rewards, next_states, next_rm_states = map(ptu.from_numpy, [np.array(states), np.array(rm_states), np.array(actions), np.array(rewards), np.array(next_states), np.array(next_rm_states)])
+        next_input = ptu.from_numpy(np.row_stack((np.array(next_states), np.array(next_rm_states))).T).float()
+        curr_input = ptu.from_numpy(np.row_stack((np.array(states), np.array(rm_states))).T).float()
+
+        next_qa_values = self.Q_target(next_input)
+
+        next_action = torch.argmax(self.Q(next_input), dim=1, keepdim=True)
+
+        next_q_values = torch.gather(next_qa_values, 1, next_action).squeeze()
+
+        target_values = rewards + (gamma * (next_q_values * (1-  ptu.from_numpy(np.array([self.rm.is_terminal_state(i) for i in rm_states])).float())))
+        
+        qa_values = self.Q(curr_input)
+        q_values = torch.gather(qa_values, 1, torch.unsqueeze(actions, dim=-1)).squeeze()
+        # Compute from the data actions; see torch.gather
+        loss = self.loss(q_values, target_values)
+
+
+        self.optimizer.zero_grad()
+        loss.backward()
+        # grad_norm = torch.nn.utils.clip_grad.clip_grad_norm_(
+        #     self.Q.parameters(), self.clip_grad_norm or float("inf")
+        # )
+        self.optimizer.step()
+
+        if step % self.target_network_update_period == 0:
+            self.update_target_network()
+
+        
+    def update_target_network(self):
+        # copy current_network to target network
+        self.Q_target.load_state_dict(self.Q.state_dict())
+
+
+
+        

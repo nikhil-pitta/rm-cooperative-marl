@@ -14,15 +14,23 @@ if __name__ == "__main__":
     # experiment = 'ihrl_rendezvous'
     # experiment = 'iql_rendezvous'
 
-    experiment = 'buttons'
+    # experiment = 'buttons'
     # experiment = 'ihrl_buttons'
     # experiment = 'iql_buttons'
+    
+    experiment = 'drendezvous'
 
     if experiment == 'rendezvous':
         from rendezvous_config import rendezvous_config
         from experiments.dqprm import run_multi_agent_experiment
         tester = rendezvous_config(num_times, num_agents) # Get test object from config script
         run_multi_agent_experiment(tester, num_agents, num_times)
+
+    if experiment == 'drendezvous':
+        from rendezvous_config import rendezvous_config
+        from experiments.ddqprm import run_multi_agent_experiment
+        tester = rendezvous_config(num_times, num_agents)
+        run_multi_agent_experiment(tester, num_agents, num_times, 128, 200)
 
     if experiment == 'centralized_rendezvous':
         from rendezvous_config import rendezvous_config
