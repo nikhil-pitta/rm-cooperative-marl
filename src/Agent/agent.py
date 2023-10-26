@@ -116,29 +116,12 @@ class Agent:
             a = random.choice(self.actions)
             a_selected = a
         else:
-            pr_sum = np.sum(np.exp(self.q[self.s, self.u, :] * T))
-            pr = np.exp(self.q[self.s, self.u, :] * T)/pr_sum # pr[a] is probability of taking action a
+            #TODO: fix this
+            input = np.row_stack(([self.s], [self.u])).T
 
-            # If any q-values are so large that the softmax function returns infinity, 
-            # make the corresponding actions equally likely
-            if any(np.isnan(pr)):
-                print('BOLTZMANN CONSTANT TOO LARGE IN ACTION-SELECTION SOFTMAX.')
-                temp = np.array(np.isnan(pr), dtype=float)
-                pr = temp / np.sum(temp)
-
-            pr_select = np.zeros(len(self.actions) + 1)
-            pr_select[0] = 0
-            for i in range(len(self.actions)):
-                pr_select[i+1] = pr_select[i] + pr[i]
-
-            randn = random.random()
-            for a in self.actions:
-                if randn >= pr_select[a] and randn <= pr_select[a+1]:
-                    a_selected = a
-                    break
-
-            # best_actions = np.where(self.q[self.s, self.u, :] == np.max(self.q[self.s, self.u, :]))[0]
-            # a_selected = random.choice(best_actions)
+            qa = self.Q(ptu.from_numpy(input).float())
+            a_selected = torch.argmax(qa)
+            a_selected = ptu.to_numpy(a_selected).squeeze(0).item()
         
         a = a_selected
 
