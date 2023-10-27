@@ -1,4 +1,5 @@
 
+import wandb
 import pickle
 from datetime import datetime
 import os
@@ -18,7 +19,10 @@ if __name__ == "__main__":
     # experiment = 'ihrl_buttons'
     # experiment = 'iql_buttons'
     
-    experiment = 'drendezvous'
+    # experiment = 'drendezvous'
+    experiment = 'dbuttons'
+
+    wandb.init(project = experiment)
 
     if experiment == 'rendezvous':
         from rendezvous_config import rendezvous_config
@@ -56,6 +60,13 @@ if __name__ == "__main__":
         num_agents = 3 # Num agents must be 3 for this example
         tester = buttons_config(num_times, num_agents) # Get test object from config script
         run_multi_agent_experiment(tester, num_agents, num_times, show_print=True)
+    
+    if experiment == "dbuttons":
+        from buttons_config import buttons_config
+        from experiments.ddqprm import run_multi_agent_experiment
+        num_agents = 3 # Num agents must be 3 for this example
+        tester = buttons_config(num_times, num_agents) # Get test object from config script
+        run_multi_agent_experiment(tester, num_agents, num_times, 128, 5000)
 
     if experiment == 'ihrl_buttons':
         from buttons_config import buttons_config

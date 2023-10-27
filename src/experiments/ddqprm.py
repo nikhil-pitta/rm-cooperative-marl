@@ -1,3 +1,4 @@
+import wandb
 import numpy as np
 import random, time
 
@@ -116,6 +117,8 @@ def run_qlearning_task(epsilon,
                                                                                         learning_params,
                                                                                         testing_params,
                                                                                         show_print=show_print)
+            wandb.log({'Episode Reward': testing_reward, 'Step': tester.get_current_step(), "Episode Epsilon": epsilon})
+            
             # Save the testing reward
             if 0 not in tester.results.keys():
                 tester.results[0] = {}
@@ -301,12 +304,12 @@ def run_multi_agent_experiment(tester,num_agents,num_times,batch_size, buffer_si
         step = 0
 
         # Task loop
-        epsilon = learning_params.initial_epsilon
+        epsilon = learning_params.exploration_fraction
 
         while not tester.stop_learning():
             num_episodes += 1
 
-            # epsilon = epsilon*0.99
+            epsilon = epsilon*0.99
 
             run_qlearning_task(epsilon,
                                 tester,
