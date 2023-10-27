@@ -24,7 +24,7 @@ class Agent:
     state when starting a new episode by calling self.initialize_world() and 
     self.initialize_reward_machine().
     """
-    def __init__(self, rm_file, s_i, num_states, actions, agent_id, batch_size, buffer_size):
+    def __init__(self, rm_file, s_i, num_states, actions, agent_id, batch_size, buffer_size, tester=None):
         """
         Initialize agent object.
 
@@ -39,6 +39,9 @@ class Agent:
         agent_id : int
             Index of this agent.
         """
+
+        self.tester = tester
+
         self.rm_file = rm_file
         self.agent_id = agent_id
         self.s_i = s_i
@@ -210,7 +213,7 @@ class Agent:
         # Compute from the data actions; see torch.gather
         loss = self.loss(q_values, target_values)
 
-        wandb.log({'Critic Loss': loss})
+        wandb.log({'Critic Loss': loss, 'Step': self.tester.get_current_step()})
 
 
         self.optimizer.zero_grad()

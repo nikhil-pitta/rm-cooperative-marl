@@ -245,7 +245,7 @@ def run_multi_agent_qlearning_test(agent_list,
 
     if show_print:
         print('Reward of {} achieved in {} steps. Current step: {} of {}'.format(testing_reward, step, tester.current_step, tester.total_steps))
-        wandb.log({'Number of Steps Reward Achieved': step})
+        wandb.log({'Number of Steps Reward Achieved': step, 'Step': tester.get_current_step()})
 
     return testing_reward, trajectory, step
 

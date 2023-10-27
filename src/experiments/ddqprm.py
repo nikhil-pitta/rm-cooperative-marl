@@ -106,7 +106,7 @@ def run_qlearning_task(epsilon,
                 actions = agent_list[i].actions
                 agent_id = agent_list[i].agent_id
                 num_states = agent_list[i].num_states
-                agent_copy = Agent(rm_file, s_i, num_states, actions, agent_id, batch_size, buffer_size)
+                agent_copy = Agent(rm_file, s_i, num_states, actions, agent_id, batch_size, buffer_size, tester)
                 # Pass only the q-function by reference so that the testing updates the original agent's q-function.
                 # agent_copy.q = agent_list[i].q
                 agent_copy.Q = copy.deepcopy(agent_list[i].Q)
@@ -120,7 +120,7 @@ def run_qlearning_task(epsilon,
                                                                                         learning_params,
                                                                                         testing_params,
                                                                                         show_print=show_print)
-            wandb.log({'Episode Reward': testing_reward, 'Step': tester.get_current_step(), "Episode Epsilon": epsilon})
+            wandb.log({'Episode Reward': testing_reward, "Episode Epsilon": epsilon, "Step": tester.get_current_step()})
             
             # Save the testing reward
             if 0 not in tester.results.keys():
@@ -256,8 +256,7 @@ def run_multi_agent_qlearning_test(agent_list,
 
     if show_print:
         print('Reward of {} achieved in {} steps. Current step: {} of {}'.format(testing_reward, step, tester.current_step, tester.total_steps))
-        wandb.log({'Number of Steps Reward Achieved': step})
-
+        wandb.log({'Number of Steps Reward Achieved': step, 'Step': tester.get_current_step()})
 
     return testing_reward, trajectory, step
 
@@ -303,7 +302,7 @@ def run_multi_agent_experiment(tester,num_agents,num_times,batch_size, buffer_si
         for i in range(num_agents):
             actions = testing_env.get_actions(i)
             s_i = testing_env.get_initial_state(i)
-            agent_list.append(Agent(rm_learning_file_list[i], s_i, num_states, actions, i, batch_size, buffer_size))
+            agent_list.append(Agent(rm_learning_file_list[i], s_i, num_states, actions, i, batch_size, buffer_size, tester))
 
         num_episodes = 0
         step = 0
