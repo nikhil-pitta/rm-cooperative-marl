@@ -2,12 +2,14 @@ import numpy as np
 import random, time
 
 from tester.tester import Tester
-from Agent.agent import Agent
+from Agent.old_agent import Agent
 from Environments.coop_buttons.buttons_env import ButtonsEnv
 from Environments.coop_buttons.multi_agent_buttons_env import MultiAgentButtonsEnv
 from Environments.rendezvous.gridworld_env import GridWorldEnv
 from Environments.rendezvous.multi_agent_gridworld_env import MultiAgentGridWorldEnv
 import matplotlib.pyplot as plt
+
+import wandb
 
 def run_qlearning_task(epsilon,
                         tester,
@@ -106,6 +108,9 @@ def run_qlearning_task(epsilon,
                                                                                         learning_params,
                                                                                         testing_params,
                                                                                         show_print=show_print)
+            
+            wandb.log({'Episode Reward': testing_reward, 'Step': tester.get_current_step(), "Episode Epsilon": epsilon})
+
             # Save the testing reward
             if 0 not in tester.results.keys():
                 tester.results[0] = {}
@@ -240,6 +245,7 @@ def run_multi_agent_qlearning_test(agent_list,
 
     if show_print:
         print('Reward of {} achieved in {} steps. Current step: {} of {}'.format(testing_reward, step, tester.current_step, tester.total_steps))
+        wandb.log({'Number of Steps Reward Achieved': step})
 
     return testing_reward, trajectory, step
 

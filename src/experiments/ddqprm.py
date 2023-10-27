@@ -1,6 +1,7 @@
 import wandb
 import numpy as np
 import random, time
+import copy
 
 from tester.tester import Tester
 from Agent.agent import Agent
@@ -107,7 +108,9 @@ def run_qlearning_task(epsilon,
                 num_states = agent_list[i].num_states
                 agent_copy = Agent(rm_file, s_i, num_states, actions, agent_id, batch_size, buffer_size)
                 # Pass only the q-function by reference so that the testing updates the original agent's q-function.
-                agent_copy.q = agent_list[i].q
+                # agent_copy.q = agent_list[i].q
+                agent_copy.Q = copy.deepcopy(agent_list[i].Q)
+                agent_copy.Q_target = copy.deepcopy(agent_list[i].Q_target)
 
                 agent_list_copy.append(agent_copy)
 
@@ -253,6 +256,8 @@ def run_multi_agent_qlearning_test(agent_list,
 
     if show_print:
         print('Reward of {} achieved in {} steps. Current step: {} of {}'.format(testing_reward, step, tester.current_step, tester.total_steps))
+        wandb.log({'Number of Steps Reward Achieved': step})
+
 
     return testing_reward, trajectory, step
 

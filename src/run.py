@@ -3,6 +3,7 @@ import wandb
 import pickle
 from datetime import datetime
 import os
+import argparse
 
 if __name__ == "__main__":
 
@@ -10,17 +11,12 @@ if __name__ == "__main__":
 
     num_agents = 3 # This will be automatically set to 3 for buttons experiment (max 10)
 
-    # experiment = 'rendezvous'
-    # experiment = 'centralized_rendezvous'
-    # experiment = 'ihrl_rendezvous'
-    # experiment = 'iql_rendezvous'
-
-    # experiment = 'buttons'
-    # experiment = 'ihrl_buttons'
-    # experiment = 'iql_buttons'
+    parser = argparse.ArgumentParser(description="Multi-agent experiment runner.")
+    parser.add_argument("--experiment_name", type=str, default="dbuttons", 
+                        help="Name of the experiment")
+    args = parser.parse_args()
     
-    # experiment = 'drendezvous'
-    experiment = 'dbuttons'
+    experiment = args.experiment_name
 
     wandb.init(project = experiment)
 
