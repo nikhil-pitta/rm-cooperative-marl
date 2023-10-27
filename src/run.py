@@ -22,7 +22,7 @@ if __name__ == "__main__":
     wandb.define_metric("Step")
     wandb.define_metric("Episode Reward", step_metric="Step")
     wandb.define_metric("Episode Epsilon", step_metric="Step")
-    wandb.define_metric("Number of Steps Reward Achieved'", step_metric="Step")
+    wandb.define_metric("Number of Steps Reward Achieved", step_metric="Step")
 
 
     if experiment == 'rendezvous':

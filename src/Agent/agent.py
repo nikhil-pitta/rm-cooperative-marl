@@ -213,7 +213,7 @@ class Agent:
         # Compute from the data actions; see torch.gather
         loss = self.loss(q_values, target_values)
 
-        wandb.log({'Critic Loss': loss, 'Step': self.tester.get_current_step()})
+        wandb.log({'Critic Loss': loss, 'Step': self.tester.get_global_step()})
 
 
         self.optimizer.zero_grad()

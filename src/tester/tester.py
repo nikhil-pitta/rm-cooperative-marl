@@ -27,15 +27,22 @@ class Tester:
         self.results = {}
         self.steps = []
 
+        # total steps over total epochs
+        self.global_step_counter = 0
+
     # Methods to keep track of trainint/testing progress
     def restart(self):
         self.current_step = 0
 
     def add_step(self):
         self.current_step += 1
+        self.global_step_counter += 1
 
     def get_current_step(self):
         return self.current_step
+    
+    def get_global_step(self):
+        return self.global_step_counter
 
     def stop_learning(self):
         return self.total_steps <= self.current_step
