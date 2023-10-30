@@ -1,6 +1,7 @@
 import random, math, os
 import numpy as np
 from enum import Enum
+import wandb
 
 import sys
 sys.path.append('../')

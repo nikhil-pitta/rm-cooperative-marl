@@ -1,6 +1,8 @@
 import random, math, os
 import numpy as np
 from enum import Enum
+import wandb
+import matplotlib.pyplot as plt
 
 import sys
 sys.path.append('../')
@@ -597,8 +599,68 @@ class MultiAgentButtonsEnv:
         for i in range(self.num_agents):
             row, col = self.get_state_description(s[i])
             display[row, col] = i + 1
-
+        
         print(display)
+
+    def log_traj(self, trajectory, step):
+        display = np.zeros((self.Nr, self.Nc))
+
+        # Display the locations of the walls
+        for loc in self.env_settings['walls']:
+            display[loc] = -1
+
+        display[self.env_settings['red_button']] = 9
+        display[self.env_settings['green_button']] = 9
+        display[self.env_settings['yellow_button']] = 9
+        display[self.env_settings['goal_location']] = 9
+
+        for loc in self.red_tiles:
+            display[loc] = 8
+        for loc in self.green_tiles:
+            display[loc] = 8
+        for loc in self.yellow_tiles:
+            display[loc] = 8
+
+        # Display the agents
+        for t in range(len(trajectory)):
+            for i in range(self.num_agents):
+                row, col = self.get_state_description(trajectory[t][i])
+                display[row, col] = i + 1
+
+        self.plot_grid(display, step)
+        
+    def plot_grid(self, grid, step):
+        colors = {-1: 'black', 0: 'white', 8: 'gray', 9: 'yellow'}
+
+        # Add colors for agents (1, 2, 3)
+        for agent_id in range(1, 4):
+            colors[agent_id] = 'red'
+
+        # Create a figure and axis
+        fig, ax = plt.subplots()
+
+        # Iterate through the grid and plot elements
+        for i in range(grid.shape[0]):
+            for j in range(grid.shape[1]):
+                # Plot rectangles with corresponding colors
+                ax.add_patch(plt.Rectangle((j, -i - 1), 1, 1, color=colors[grid[i, j]]))
+
+                # Plot circles for agent locations
+                if grid[i, j] in [1, 2, 3]:
+                    ax.add_patch(plt.Circle((j + 0.5, -i - 0.5), 0.3, color='red'))
+
+        # Set x and y limits based on grid dimensions
+        ax.set_xlim(0, grid.shape[1])
+        ax.set_ylim(-grid.shape[0], 0)
+
+        # Remove x and y ticks and labels for cleaner visualization
+        ax.set_xticks([])
+        ax.set_yticks([])
+        ax.set_xticklabels([])
+        ax.set_yticklabels([])
+
+
+        wandb.log({"gridworld": wandb.Image(fig), "Step": step})
 
 def play():
     n = 3 # num agents

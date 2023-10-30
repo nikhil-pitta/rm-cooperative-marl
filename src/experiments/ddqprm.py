@@ -228,6 +228,7 @@ def run_multi_agent_qlearning_test(agent_list,
         # trajectory.append({'s' : np.array(s_team, dtype=int), 'a' : np.array(a_team, dtype=int), 'u_team': np.array(u_team, dtype=int), 'u': int(testing_env.u)})
 
         r, l, s_team_next = testing_env.environment_step(s_team, a_team)
+        trajectory.append(s_team_next)
 
         testing_reward = testing_reward + r
 
@@ -258,6 +259,7 @@ def run_multi_agent_qlearning_test(agent_list,
         print('Reward of {} achieved in {} steps. Current step: {} of {}'.format(testing_reward, step, tester.current_step, tester.total_steps))
         wandb.log({'Number of Steps Reward Achieved': step, 'Step': tester.get_global_step()})
 
+    testing_env.log_traj(trajectory, tester.get_global_step())
     return testing_reward, trajectory, step
 
 def run_multi_agent_experiment(tester,num_agents,num_times,batch_size, buffer_size,show_print_1=True):
