@@ -4,6 +4,10 @@ from enum import Enum
 import wandb
 import matplotlib.pyplot as plt
 
+from matplotlib.colors import ListedColormap
+
+
+
 import sys
 sys.path.append('../')
 sys.path.append('../../')
@@ -605,62 +609,88 @@ class MultiAgentButtonsEnv:
     def log_traj(self, trajectory, step):
         display = np.zeros((self.Nr, self.Nc))
 
+        pseudo_display = np.zeros((self.Nr, self.Nc))
+
+        colors = ['red', 'green', 'yellow', 'gold']
+        num_to_color = {i+1: color for i, color in enumerate(colors)}
+        num_to_color[-1] = 'black'
+        num_to_color[0] = 'gray'
+
+        color_to_num = {v: k for k, v in num_to_color.items()}
+
         # Display the locations of the walls
         for loc in self.env_settings['walls']:
             display[loc] = -1
+            pseudo_display[loc] = -1
 
         display[self.env_settings['red_button']] = 9
         display[self.env_settings['green_button']] = 9
         display[self.env_settings['yellow_button']] = 9
         display[self.env_settings['goal_location']] = 9
 
+        pseudo_display[self.env_settings['red_button']] = color_to_num['red']
+        pseudo_display[self.env_settings['green_button']] = color_to_num['green']
+        pseudo_display[self.env_settings['yellow_button']] = color_to_num['yellow']
+        pseudo_display[self.env_settings['goal_location']] = color_to_num['gold']
+
+
         for loc in self.red_tiles:
             display[loc] = 8
+            pseudo_display[loc] = color_to_num['red']
         for loc in self.green_tiles:
             display[loc] = 8
+            pseudo_display[loc] = color_to_num['green']
         for loc in self.yellow_tiles:
             display[loc] = 8
+            pseudo_display[loc] = color_to_num['yellow']
 
         # Display the agents
+        real_agent_traj = [[] for i in range(self.num_agents)]
         for t in range(len(trajectory)):
             for i in range(self.num_agents):
                 row, col = self.get_state_description(trajectory[t][i])
-                display[row, col] = i + 1
+                real_agent_traj[i].append((col, row))
 
-        self.plot_grid(display, step)
+
+        self.plot_grid(pseudo_display, step, num_to_color, real_agent_traj)
         
-    def plot_grid(self, grid, step):
-        colors = {-1: 'black', 0: 'white', 8: 'gray', 9: 'yellow'}
-
-        # Add colors for agents (1, 2, 3)
-        for agent_id in range(1, 4):
-            colors[agent_id] = 'red'
-
+    def plot_grid(self, grid, step, num_to_color, real_agent_traj):
+            
+   
         # Create a figure and axis
         fig, ax = plt.subplots()
 
-        # Iterate through the grid and plot elements
-        for i in range(grid.shape[0]):
-            for j in range(grid.shape[1]):
-                # Plot rectangles with corresponding colors
-                ax.add_patch(plt.Rectangle((j, -i - 1), 1, 1, color=colors[grid[i, j]]))
+        def plot_arrow(ax, start, end, color='black'):
+            """Utility function to plot an arrow on a given axis."""
+            ax.annotate('', xy=end, xytext=start,
+                        arrowprops=dict(facecolor=color, edgecolor=color, arrowstyle='->'))
 
-                # Plot circles for agent locations
-                if grid[i, j] in [1, 2, 3]:
-                    ax.add_patch(plt.Circle((j + 0.5, -i - 0.5), 0.3, color='red'))
 
-        # Set x and y limits based on grid dimensions
-        ax.set_xlim(0, grid.shape[1])
-        ax.set_ylim(-grid.shape[0], 0)
-
+        agent_colors = ['yellow', 'green', 'red']
+        for i in range(self.num_agents):
+          for t in range(len(real_agent_traj[0]) - 1):
+                start = real_agent_traj[i][t]
+                end = real_agent_traj[i][t+1]
+                plot_arrow(ax, start, end, agent_colors[i])
+ 
         # Remove x and y ticks and labels for cleaner visualization
+        sorted_keys = sorted(num_to_color.keys())  # Sort the keys to ensure correct order
+        colors_ordered = [num_to_color[key] for key in sorted_keys]
+
+        # Create a ListedColormap
+        cmap = ListedColormap(colors_ordered)
+
         ax.set_xticks([])
         ax.set_yticks([])
         ax.set_xticklabels([])
         ax.set_yticklabels([])
+        ax.imshow(grid, cmap=cmap, aspect="equal")
 
+        # plt.show()
 
         wandb.log({"gridworld": wandb.Image(fig), "Step": step})
+        
+        plt.close()
 
 def play():
     n = 3 # num agents
