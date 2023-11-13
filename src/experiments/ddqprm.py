@@ -39,9 +39,10 @@ def run_qlearning_task(epsilon,
 
     num_agents = len(agent_list)
 
+    assign(agent_list)
     for i in range(num_agents):
         agent_list[i].reset_state()
-        agent_list[i].initialize_reward_machine()
+        #agent_list[i].initialize_reward_machine()
 
     num_steps = learning_params.max_timesteps_per_task
 
@@ -69,7 +70,7 @@ def run_qlearning_task(epsilon,
                 # a = training_environments[i].get_last_action() # due to MDP slip
                 # agent_list[i].update_agent(s_new, a, r, l, learning_params)
                 if tester.get_current_step() > agent_list[i].buffer.max_: 
-                    agent_list[i].update_agent(s_new, a, r, l, learning_params, tester.get_current_step())
+                    agent_list[i].update_agent(s_new, a, r, l, learning_params, tester.get_current_step(), i=i)
                 agent_list[i].buffer.add(s, current_u, a, r, s_new, u2)
 
                 for u in agent_list[i].rm.U:
@@ -250,7 +251,10 @@ def run_multi_agent_qlearning_test(agent_list,
 
             # update the agent's internal representation
             # a = testing_env.get_last_action(i)
-            agent_list[i].update_agent(s_team_next[i], a_team[i], r, projected_l_dict[i], learning_params, tester.get_current_step(), update_q_function=False)
+            agent_list[i].update_agent(s_team_next[i], a_team[i], r, projected_l_dict[i], learning_params, tester.get_current_step(), update_q_function=False, i=i)
+
+        # for i in range(num_agents):
+        #     wandb.log({f"Reward Achieved for Agent {i}": int(agent_list[i].is_task_complete), "Step": tester.get_global_step()})
 
         if all(agent.is_task_complete for agent in agent_list):
             break
@@ -383,3 +387,7 @@ def plot_multi_agent_results(tester, num_agents):
     plt.locator_params(axis='x', nbins=5)
 
     plt.show()
+
+
+def assign(agents):
+    ...

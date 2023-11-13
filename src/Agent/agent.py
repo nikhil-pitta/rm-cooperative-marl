@@ -77,11 +77,11 @@ class Agent:
         
         self.optimizer = torch.optim.Adam([
                         {'params': self.Q.parameters(), 'lr': 0.001},
-                    ])
+                    ], betas=[0.9, 0.9])
 
         self.update_target_network()
 
-        self.loss = nn.MSELoss()
+        self.loss = nn.SmoothL1Loss()
 
     def reset_state(self):
         """
@@ -128,7 +128,7 @@ class Agent:
         
         return self.s, a
 
-    def update_agent(self, s_new, a, reward, label, learning_params, step, update_q_function=True):
+    def update_agent(self, s_new, a, reward, label, learning_params, step, update_q_function=True, i=-1, evaluate_critic_loss=False):
         """
         Update the agent's state, q-function, and reward machine after 
         interacting with the environment.
@@ -156,9 +156,17 @@ class Agent:
             self.u = u2
         
         self.total_local_reward += reward
+        # print("reward", self.rm.is_terminal_state(self.u), "isDone", self.rm.is_terminal_state(self.u))
+        if i >= 0:
+            wandb.log({f"Reward Achieved for Agent {i}": int(reward), "Step": self.tester.get_global_step()})
 
         if update_q_function == True:
-            self.update_q_function(self.s, s_new, u_start, self.u, a, reward, learning_params, step)
+            self.update_q_function(self.s, s_new, u_start, self.u, a, reward, learning_params, step,)
+        
+        # if evaluate_critic_loss:
+        #     self.eval_q_loss(self.s, s_new, u_start, self.u, a, reward, learning_params, step, i=i)
+        # else:
+        #     wandb.log({f"Critic Loss for Agent {i}": 1, 'Step': self.tester.get_global_step()})
 
         # Moving to the next state
         self.s = s_new
@@ -167,7 +175,7 @@ class Agent:
             # Completed task. Set flag.
             self.is_task_complete = 1
 
-    def update_q_function(self, s, s_new, u, u_new, a, reward, learning_params, step):
+    def update_q_function(self, s, s_new, u, u_new, a, reward, learning_params, step, i=-1):
         """
         Update the q function using the action, states, and reward value.
 
@@ -193,7 +201,6 @@ class Agent:
 
         # Bellman update
         # self.q[s][u][a] = (1-alpha)*self.q[s][u][a] + alpha*(reward + gamma*np.amax(self.q[s_new][u_new]))
-
         #Q-function update
         states, rm_states, actions, rewards, next_states, next_rm_states = self.buffer.sample(self.batch_size)
         states, rm_states, actions, rewards, next_states, next_rm_states = map(ptu.from_numpy, [np.array(states), np.array(rm_states), np.array(actions), np.array(rewards), np.array(next_states), np.array(next_rm_states)])
@@ -213,7 +220,10 @@ class Agent:
         # Compute from the data actions; see torch.gather
         loss = self.loss(q_values, target_values)
 
-        wandb.log({'Critic Loss': loss, 'Step': self.tester.get_global_step()})
+        print("i", i)
+        if i >= 0:
+            print("broooo")
+            wandb.log({f"Critic Loss for Agent {i}": loss, 'Step': self.tester.get_global_step()})
 
 
         self.optimizer.zero_grad()

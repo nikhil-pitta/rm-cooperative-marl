@@ -23,6 +23,9 @@ if __name__ == "__main__":
     wandb.define_metric("Episode Reward", step_metric="Step")
     wandb.define_metric("Episode Epsilon", step_metric="Step")
     wandb.define_metric("Number of Steps Reward Achieved", step_metric="Step")
+    for i in range(num_agents):
+        wandb.define_metric(f"Reward Achieved for Agent {i}", step_metric="Step")
+        wandb.define_metric(f"Critic Loss for Agent {i}", step_metric="Step")
 
 
     if experiment == 'rendezvous':
@@ -67,7 +70,7 @@ if __name__ == "__main__":
         from experiments.ddqprm import run_multi_agent_experiment
         num_agents = 3 # Num agents must be 3 for this example
         tester = buttons_config(num_times, num_agents) # Get test object from config script
-        run_multi_agent_experiment(tester, num_agents, num_times, 128, 5000)
+        run_multi_agent_experiment(tester, num_agents, num_times, 512, 5000)
 
     if experiment == 'ihrl_buttons':
         from buttons_config import buttons_config
