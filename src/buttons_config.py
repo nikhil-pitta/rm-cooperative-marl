@@ -34,7 +34,14 @@ def buttons_config(num_times, num_agents):
     learning_params.gamma = 0.9 # 0.9
     learning_params.alpha = 0.8
     learning_params.T = 50
-    learning_params.initial_epsilon = 0.0 # Set epsilon to zero to turn off epsilon-greedy exploration (only using boltzmann)
+    # learning_params.initial_epsilon = 0.0 # Set epsilon to zero to turn off epsilon-greedy exploration (only using boltzmann)
+
+    ######### for deepqbuttons #############
+    learning_params.initial_epsilon = 1
+    learning_params.exploration_fraction = 0.99
+    ######### for deepqbuttons #############
+
+
     learning_params.max_timesteps_per_task = testing_params.num_steps
 
     tester = Tester(learning_params, testing_params)

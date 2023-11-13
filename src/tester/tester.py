@@ -36,6 +36,8 @@ class Tester:
 
     def add_step(self):
         self.current_step += 1
+    
+    def add_global(self):
         self.global_step_counter += 1
 
     def get_current_step(self):

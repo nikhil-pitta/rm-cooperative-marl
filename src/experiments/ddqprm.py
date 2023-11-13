@@ -39,10 +39,10 @@ def run_qlearning_task(epsilon,
 
     num_agents = len(agent_list)
 
-    assign(agent_list)
+
     for i in range(num_agents):
         agent_list[i].reset_state()
-        #agent_list[i].initialize_reward_machine()
+        agent_list[i].initialize_reward_machine()
 
     num_steps = learning_params.max_timesteps_per_task
 
@@ -121,8 +121,13 @@ def run_qlearning_task(epsilon,
                                                                                         learning_params,
                                                                                         testing_params,
                                                                                         show_print=show_print)
-            wandb.log({'Episode Reward': testing_reward, "Episode Epsilon": epsilon, "Step": tester.get_global_step()})
+            wandb.log({'Episode Reward': testing_reward, 
+                       "Episode Epsilon": epsilon, 
+                       'Number of Steps Reward Achieved': testing_steps, 
+                       "Test Trajectory": tester.get_global_step()})
             
+            tester.add_global()
+
             # Save the testing reward
             if 0 not in tester.results.keys():
                 tester.results[0] = {}
@@ -253,15 +258,15 @@ def run_multi_agent_qlearning_test(agent_list,
             # a = testing_env.get_last_action(i)
             agent_list[i].update_agent(s_team_next[i], a_team[i], r, projected_l_dict[i], learning_params, tester.get_current_step(), update_q_function=False, i=i)
 
-        # for i in range(num_agents):
-        #     wandb.log({f"Reward Achieved for Agent {i}": int(agent_list[i].is_task_complete), "Step": tester.get_global_step()})
-
         if all(agent.is_task_complete for agent in agent_list):
             break
 
+    for i in range(num_agents):
+        wandb.log({f"Reward Achieved for Agent {i}": int(agent_list[i].is_task_complete), "Test Trajectory": tester.get_global_step()})
+        # wandb.log({f"Reward Achieved for Agent {i}": agent_list[i].total_local_reward, "Test Trajectory": tester.get_global_step()})
+
     if show_print:
         print('Reward of {} achieved in {} steps. Current step: {} of {}'.format(testing_reward, step, tester.current_step, tester.total_steps))
-        wandb.log({'Number of Steps Reward Achieved': step, 'Step': tester.get_global_step()})
 
     testing_env.log_traj(trajectory, tester.get_global_step())
     return testing_reward, trajectory, step
@@ -314,12 +319,12 @@ def run_multi_agent_experiment(tester,num_agents,num_times,batch_size, buffer_si
         step = 0
 
         # Task loop
-        epsilon = learning_params.exploration_fraction
+        epsilon = learning_params.initial_epsilon
 
         while not tester.stop_learning():
             num_episodes += 1
 
-            epsilon = epsilon*0.99
+            epsilon = epsilon*learning_params.exploration_fraction
 
             run_qlearning_task(epsilon,
                                 tester,
@@ -387,7 +392,3 @@ def plot_multi_agent_results(tester, num_agents):
     plt.locator_params(axis='x', nbins=5)
 
     plt.show()
-
-
-def assign(agents):
-    ...

@@ -19,13 +19,15 @@ if __name__ == "__main__":
     experiment = args.experiment_name
 
     wandb.init(project = experiment)
-    wandb.define_metric("Step")
-    wandb.define_metric("Episode Reward", step_metric="Step")
-    wandb.define_metric("Episode Epsilon", step_metric="Step")
-    wandb.define_metric("Number of Steps Reward Achieved", step_metric="Step")
+    wandb.define_metric("Test Trajectory")
+    wandb.define_metric("Episode Reward", step_metric="Test Trajectory")
+    wandb.define_metric("Episode Epsilon", step_metric="Test Trajectory")
+    wandb.define_metric("Number of Steps Reward Achieved", step_metric="Test Trajectory")
+    wandb.define_metric("Buttons Image", step_metric="Test Trajectory")
+
     for i in range(num_agents):
-        wandb.define_metric(f"Reward Achieved for Agent {i}", step_metric="Step")
-        wandb.define_metric(f"Critic Loss for Agent {i}", step_metric="Step")
+        wandb.define_metric(f"Reward Achieved for Agent {i}", step_metric="Test Trajectory")
+        # wandb.define_metric(f"Critic Loss for Agent {i}", step_metric="Step")
 
 
     if experiment == 'rendezvous':
