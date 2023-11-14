@@ -73,6 +73,13 @@ if __name__ == "__main__":
         num_agents = 3 # Num agents must be 3 for this example
         tester = buttons_config(num_times, num_agents) # Get test object from config script
         run_multi_agent_experiment(tester, num_agents, num_times, 512, 5000)
+    
+    if experiment == "lpdbuttons":
+        from buttons_config import buttons_config
+        from experiments.ddqprm_lp import run_multi_agent_experiment
+        num_agents = 3 # Num agents must be 3 for this example
+        tester = buttons_config(num_times, num_agents)
+        run_multi_agent_experiment(tester, num_agents, num_times, 512, 5000)
 
     if experiment == 'ihrl_buttons':
         from buttons_config import buttons_config
