@@ -238,6 +238,7 @@ def run_multi_agent_qlearning_test(agent_list,
 
             # update the agent's internal representation
             # a = testing_env.get_last_action(i)
+            print("PROJECT", projected_l_dict[i])
             agent_list[i].update_agent(s_team_next[i], a_team[i], r, projected_l_dict[i], learning_params, update_q_function=False)
 
         if all(agent.is_task_complete for agent in agent_list):

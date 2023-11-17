@@ -5,7 +5,7 @@ import copy
 
 from tester.tester import Tester
 from Agent.teamwork_agent import Agent
-from Environments.coop_buttons.buttons_env import ButtonsEnv
+from Environments.coop_buttons.buttons_env_teamwork import ButtonsEnv
 from Environments.coop_buttons.multi_agent_buttons_env import MultiAgentButtonsEnv
 from Environments.rendezvous.gridworld_env import GridWorldEnv
 from Environments.rendezvous.multi_agent_gridworld_env import MultiAgentGridWorldEnv
@@ -44,7 +44,7 @@ def run_qlearning_task(epsilon,
     manager.assign(agent_list)
     for i in range(num_agents):
         agent_list[i].reset_state()
-        print(f"agent start {i}", agent_list[i].u)
+        # print(f"agent start {i}", agent_list[i].u)
         # agent_list[i].initialize_reward_machine()
 
     num_steps = learning_params.max_timesteps_per_task
@@ -57,7 +57,7 @@ def run_qlearning_task(epsilon,
     if tester.experiment == 'buttons':
         training_environments = []
         for i in range(num_agents):
-            training_environments.append(ButtonsEnv(agent_list[i].rm_file, i+1, tester.env_settings))
+            training_environments.append(ButtonsEnv(agent_list[i].rm_file, i+1, tester.env_settings, manager))
 
     for t in range(num_steps):
         # Update step count
@@ -67,8 +67,15 @@ def run_qlearning_task(epsilon,
             # Perform a q-learning step.
             if not(agent_list[i].is_task_complete):
                 current_u = agent_list[i].u
+                # print(f"agent {i} at state {current_u}")
                 s, a = agent_list[i].get_next_action(epsilon, learning_params)
                 r, l, s_new = training_environments[i].environment_step(s,a)
+                if r > 0:
+                    ...
+                    # print(f"agent {i}", r, l, s_new)
+                if l:
+                    ...
+                    # print("next_step", r, l, s_new)
                 u2 = training_environments[i].u
                 # a = training_environments[i].get_last_action() # due to MDP slip
                 # agent_list[i].update_agent(s_new, a, r, l, learning_params)
@@ -76,8 +83,9 @@ def run_qlearning_task(epsilon,
                     agent_list[i].update_agent(s_new, a, r, l, learning_params, tester.get_current_step())
                 agent_list[i].buffer.add(s, current_u, a, r, s_new, u2)
 
-                for u in manager.get_subtask_states(i):
+                for u in agent_list[i].rm.U:
                     if not (u == current_u) and not (u in agent_list[i].rm.T) and not (u == agent_list[i].rm.u0):
+                    # if not (u == current_u) and not (u in agent_list[i].rm.T):
                         l = training_environments[i].get_mdp_label(s, s_new, u)
                         r = 0
                         u_temp = u
@@ -110,7 +118,7 @@ def run_qlearning_task(epsilon,
                 actions = agent_list[i].actions
                 agent_id = agent_list[i].agent_id
                 num_states = agent_list[i].num_states
-                agent_copy = Agent(rm_file, s_i, num_states, actions, agent_id, batch_size, buffer_size, tester)
+                agent_copy = Agent(rm_file, s_i, num_states, actions, agent_id, batch_size, buffer_size, tester, manager)
                 # Pass only the q-function by reference so that the testing updates the original agent's q-function.
                 # agent_copy.q = agent_list[i].q
                 agent_copy.Q = copy.deepcopy(agent_list[i].Q)
@@ -161,7 +169,7 @@ def run_qlearning_task(epsilon,
             manager.assign(agent_list)
             for i in range(num_agents):
                 agent_list[i].reset_state()
-                print(f"agent start {i}", agent_list[i].u)
+                # print(f"agent start {i}", agent_list[i].u)
                 # agent_list[i].initialize_reward_machine()
             
             # Make sure we've run at least the minimum number of training steps before breaking the loop
@@ -212,7 +220,7 @@ def run_multi_agent_qlearning_test(agent_list,
     manager.assign(agent_list)
     for i in range(num_agents):
         agent_list[i].reset_state()
-        print(f"agent start {i}", agent_list[i].u)
+        # print(f"agent start {i}", agent_list[i].u)
         # agent_list[i].initialize_reward_machine()
 
     s_team = np.full(num_agents, -1, dtype=int)
@@ -248,8 +256,10 @@ def run_multi_agent_qlearning_test(agent_list,
 
         projected_l_dict = {}
         for i in range(num_agents):
+            # print(agent_list[i].local_event_set, set(l))
             # Agent i's projected label is the intersection of l with its local event set
             projected_l_dict[i] = list(set(agent_list[i].local_event_set) & set(l))
+            # print(f"aggent {i}", set(agent_list[i].local_event_set))
             # Check if the event causes a transition from the agent's current RM state
             if not(agent_list[i].is_local_event_available(projected_l_dict[i])):
                 projected_l_dict[i] = []
@@ -264,6 +274,7 @@ def run_multi_agent_qlearning_test(agent_list,
 
             # update the agent's internal representation
             # a = testing_env.get_last_action(i)
+            # print("projection dict", projected_l_dict[i])
             agent_list[i].update_agent(s_team_next[i], a_team[i], r, projected_l_dict[i], learning_params, tester.get_current_step(), update_q_function=False)
 
         # for i in range(num_agents):
@@ -306,7 +317,7 @@ def run_multi_agent_experiment(tester,num_agents,num_times,batch_size, buffer_si
 
         rm_test_file = tester.rm_test_file
         rm_learning_file_list = tester.rm_learning_file_list
-        joined_rm_file, set_list = rm_builder.build_rm(rm_learning_file_list)
+        joined_rm_file, set_list, event_list = rm_builder.build_rm(rm_learning_file_list)
 
         # Verify that the number of local reward machines matches the number of agents in the experiment.
         assertion_string = "Number of specified local reward machines must match specified number of agents."
@@ -319,14 +330,14 @@ def run_multi_agent_experiment(tester,num_agents,num_times,batch_size, buffer_si
             testing_env = MultiAgentButtonsEnv(tester.rm_test_file, num_agents, tester.env_settings)
             num_states = testing_env.num_states
 
-        manager = Manager(joined_rm_file, set_list)
+        manager = Manager(joined_rm_file, set_list, event_list)
 
         # Create the a list of agents for this experiment
         agent_list = [] 
         for i in range(num_agents):
             actions = testing_env.get_actions(i)
             s_i = testing_env.get_initial_state(i)
-            agent_list.append(Agent(joined_rm_file, s_i, num_states, actions, i, batch_size, buffer_size, tester))
+            agent_list.append(Agent(joined_rm_file, s_i, num_states, actions, i, batch_size, buffer_size, tester, manager))
 
         num_episodes = 0
         step = 0

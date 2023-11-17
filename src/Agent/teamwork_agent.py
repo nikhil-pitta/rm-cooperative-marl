@@ -9,7 +9,7 @@ import torch
 import torch.nn as nn
 from torch.distributions import MultivariateNormal
 from torch.distributions import Categorical
-
+from Manager.manager import Manager
 import wandb
 
 class Agent:
@@ -24,7 +24,7 @@ class Agent:
     state when starting a new episode by calling self.initialize_world() and 
     self.initialize_reward_machine().
     """
-    def __init__(self, rm_file, s_i, num_states, actions, agent_id, batch_size, buffer_size, tester=None):
+    def __init__(self, rm_file, s_i, num_states, actions, agent_id, batch_size, buffer_size, tester=None, manager:Manager=None):
         """
         Initialize agent object.
 
@@ -51,7 +51,8 @@ class Agent:
 
         self.rm = ManagedSparseRewardMachine(self.rm_file)
         # self.u = self.rm.get_initial_state()
-        self.local_event_set = self.rm.get_events()
+        # self.local_event_set = self.rm.get_events()
+        self.local_event_set = manager.get_events(self.agent_id)
         
         self.q = np.zeros([num_states, len(self.rm.U), len(self.actions)])
         self.total_local_reward = 0

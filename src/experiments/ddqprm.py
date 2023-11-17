@@ -242,6 +242,10 @@ def run_multi_agent_qlearning_test(agent_list,
         for i in range(num_agents):
             # Agent i's projected label is the intersection of l with its local event set
             projected_l_dict[i] = list(set(agent_list[i].local_event_set) & set(l))
+            print(f"aggent {i}", set(agent_list[i].local_event_set))
+
+            print("PRINGINT L", l)
+            # print(i, agent_list[i].local_event_set, l)
             # Check if the event causes a transition from the agent's current RM state
             if not(agent_list[i].is_local_event_available(projected_l_dict[i])):
                 projected_l_dict[i] = []
@@ -256,6 +260,7 @@ def run_multi_agent_qlearning_test(agent_list,
 
             # update the agent's internal representation
             # a = testing_env.get_last_action(i)
+            print("PROJECT", projected_l_dict[i])
             agent_list[i].update_agent(s_team_next[i], a_team[i], r, projected_l_dict[i], learning_params, tester.get_current_step(), update_q_function=False, i=i)
 
         if all(agent.is_task_complete for agent in agent_list):

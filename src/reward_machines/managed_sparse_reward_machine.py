@@ -97,6 +97,8 @@ class ManagedSparseRewardMachine:
                 self.T.add(u1)
         self.U = sorted(self.U)
 
+        # print("pls", self.T)
+
     def calculate_reward(self, trace):
         total_reward = 0
         current_state = self.get_initial_state()
