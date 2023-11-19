@@ -1,4 +1,5 @@
 from reward_machines.managed_sparse_reward_machine import ManagedSparseRewardMachine
+import numpy as np
 class Manager:
     def __init__(self, rm_file, set_list, event_list):
         self.rm = ManagedSparseRewardMachine(rm_file)
@@ -11,11 +12,22 @@ class Manager:
         self.set_list = set_list
         # print(self.set_list)
 
+        
+
 
     def assign(self, agent_list):
+        # Default assigning
         for i in range(len(agent_list)):
             agent_list[i].u = self.start_nodes[i]  # random assignment for now
             agent_list[i].is_task_complete = 0
+
+
+        # # Random assigning
+        # for i, new_id in enumerate(np.random.permutation(len(agent_list))):
+        #     agent_list[i].agent_id = new_id # to fix the hard coded stuff
+        #     agent_list[i].u = self.start_nodes[new_id]  # change start node to new_id
+        #     agent_list[i].is_task_complete = 0
+
 
     def get_subtask_states(self, i):
         return self.set_list[i]

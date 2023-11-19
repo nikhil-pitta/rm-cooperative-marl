@@ -185,7 +185,7 @@ def run_multi_agent_qlearning_test(agent_list,
                                     learning_params,
                                     testing_params,
                                     manager,
-                                    show_print=True):
+                                    show_print=True, num_iters=1):
     """
     Run a test of the q-learning with reward machine method with the current q-function. 
 
