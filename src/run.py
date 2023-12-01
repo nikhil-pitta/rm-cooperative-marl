@@ -7,7 +7,7 @@ import argparse
 
 if __name__ == "__main__":
 
-    num_times = 10 # Number of separate trials to run the algorithm for
+    num_times = 1 # Number of separate trials to run the algorithm for
 
     num_agents = 3 # This will be automatically set to 3 for buttons experiment (max 10)
 
@@ -27,7 +27,7 @@ if __name__ == "__main__":
 
     for i in range(num_agents):
         wandb.define_metric(f"Reward Achieved for Agent {i}", step_metric="Test Trajectory")
-        # wandb.define_metric(f"Critic Loss for Agent {i}", step_metric="Step")
+        wandb.define_metric(f"Critic Loss for Agent {i}", step_metric="Test Trajectory")
 
 
     if experiment == 'rendezvous':

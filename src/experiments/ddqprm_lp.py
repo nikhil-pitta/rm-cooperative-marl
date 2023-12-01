@@ -13,13 +13,15 @@ import matplotlib.pyplot as plt
 import infrastructure.rm_utils as rm_builder
 from Manager.manager import Manager
 
+from tqdm import tqdm
+
 def run_qlearning_task(epsilon,
                         tester,
                         agent_list,
                         batch_size,
                         buffer_size,
                         manager,
-                        show_print=True):
+                        show_print=True, num_iters=5):
     """
     This code runs one q-learning episode. q-functions, and accumulated reward values of agents
     are updated accordingly. If the appropriate number of steps have elapsed, this function will
@@ -65,45 +67,46 @@ def run_qlearning_task(epsilon,
 
         for i in range(num_agents):
             # Perform a q-learning step.
+
             if not(agent_list[i].is_task_complete):
                 current_u = agent_list[i].u
                 # print(f"agent {i} at state {current_u}")
                 s, a = agent_list[i].get_next_action(epsilon, learning_params)
                 r, l, s_new = training_environments[i].environment_step(s,a)
-                if r > 0:
-                    ...
-                    # print(f"agent {i}", r, l, s_new)
-                if l:
-                    ...
-                    # print("next_step", r, l, s_new)
+
                 u2 = training_environments[i].u
                 # a = training_environments[i].get_last_action() # due to MDP slip
-                # agent_list[i].update_agent(s_new, a, r, l, learning_params)
-                if tester.get_current_step() > agent_list[i].buffer.max_: 
-                    agent_list[i].update_agent(s_new, a, r, l, learning_params, tester.get_current_step())
+                # # agent_list[i].update_agent(s_new, a, r, l, learning_params)
+                # if tester.get_current_step() > agent_list[i].buffer.max_: 
+                #     agent_list[i].update_agent(s_new, a, r, l, learning_params, tester.get_current_step())
                 agent_list[i].buffer.add(s, current_u, a, r, s_new, u2)
 
                 for u in agent_list[i].rm.U:
                     if not (u == current_u) and not (u in agent_list[i].rm.T) and not (u == agent_list[i].rm.u0):
                     # if not (u == current_u) and not (u in agent_list[i].rm.T):
-                        l = training_environments[i].get_mdp_label(s, s_new, u)
-                        r = 0
+                        new_l = training_environments[i].get_mdp_label(s, s_new, u)
+                        new_r = 0
                         u_temp = u
                         u2 = u
-                        for e in l:
+                        for e in new_l:
                             # Get the new reward machine state and the reward of this step
                             u2 = agent_list[i].rm.get_next_state(u_temp, e)
-                            r = r + agent_list[i].rm.get_reward(u_temp, u2)
+                            new_r = new_r + agent_list[i].rm.get_reward(u_temp, u2)
                             # Update the reward machine state
                             u_temp = u2
                         # agent_list[i].update_q_function(s, s_new, u, u2, a, r, learning_params)
-                        if tester.get_current_step() > agent_list[i].buffer.max_: 
-                            agent_list[i].update_q_function(s, s_new, u, u2, a, r, learning_params, tester.get_current_step())
-                        agent_list[i].buffer.add(s, u, a, r, s_new, u2)
+                        # if tester.get_current_step() > agent_list[i].buffer.max_: 
+                        #     agent_list[i].update_q_function(s, s_new, u, u2, a, r, learning_params, tester.get_current_step())
+                        agent_list[i].buffer.add(s, u, a, new_r, s_new, u2)
 
+            if tester.get_current_step() > agent_list[i].buffer.max_: 
+                if type(l) == int:
+                    print(s, s_new, r, l)
+                agent_list[i].update_agent(s_new, r, l, learning_params, tester.get_current_step())
 
         # If enough steps have elapsed, test and save the performance of the agents.
         if testing_params.test and tester.get_current_step() % testing_params.test_freq == 0:
+
             t_init = time.time()
             step = tester.get_current_step()
 
@@ -127,17 +130,38 @@ def run_qlearning_task(epsilon,
                 agent_list_copy.append(agent_copy)
 
             # Run a test of the performance of the agents
-            testing_reward, trajectory, testing_steps = run_multi_agent_qlearning_test(agent_list_copy,
-                                                                                        tester,
-                                                                                        learning_params,
-                                                                                        testing_params,
-                                                                                        manager,
-                                                                                        show_print=show_print)
-            wandb.log({'Episode Reward': testing_reward, 
+            total_testing_reward = 0 
+            total_testing_steps = 0
+            total_agent_reward = [0]*num_agents
+
+
+                
+
+            for n in range(num_iters):
+                testing_reward, trajectory, testing_steps = run_multi_agent_qlearning_test(agent_list_copy,
+                                                                                            tester,
+                                                                                            learning_params,
+                                                                                            testing_params,
+                                                                                            manager,
+                                                                                            show_print= (n == num_iters - 1))
+                total_testing_reward += testing_reward
+                total_testing_steps += testing_steps
+
+                for k in range(num_agents):
+                    total_agent_reward[k] += int(agent_list_copy[k].is_task_complete)
+
+            wandb.log({'Episode Reward': total_testing_reward/num_iters, 
                        "Episode Epsilon": epsilon, 
-                       'Number of Steps Reward Achieved': testing_steps, 
+                       'Number of Steps Reward Achieved': total_testing_steps/num_iters, 
                        "Test Trajectory": tester.get_global_step()})
+            
+            for a_n in range(num_agents):
+                wandb.log({f"Reward Achieved for Agent {a_n}": total_agent_reward[a_n]/num_iters, "Test Trajectory": tester.get_global_step()})
+                wandb.log({f"Critic Loss for Agent {a_n}": agent_list[a_n].curr_loss, "Test Trajectory": tester.get_global_step()})
+
             tester.add_global()
+
+            epsilon *= learning_params.exploration_fraction
             
             # Save the testing reward
             if 0 not in tester.results.keys():
@@ -179,13 +203,15 @@ def run_qlearning_task(epsilon,
         # checking the steps time-out
         if tester.stop_learning():
             break
+    
+    return epsilon
 
 def run_multi_agent_qlearning_test(agent_list,
                                     tester,
                                     learning_params,
                                     testing_params,
                                     manager,
-                                    show_print=True, num_iters=1):
+                                    show_print=True):
     """
     Run a test of the q-learning with reward machine method with the current q-function. 
 
@@ -275,7 +301,7 @@ def run_multi_agent_qlearning_test(agent_list,
             # update the agent's internal representation
             # a = testing_env.get_last_action(i)
             # print("projection dict", projected_l_dict[i])
-            agent_list[i].update_agent(s_team_next[i], a_team[i], r, projected_l_dict[i], learning_params, tester.get_current_step(), update_q_function=False)
+            agent_list[i].update_agent(s_team_next[i], r, projected_l_dict[i], learning_params, tester.get_current_step(), update_q_function=False, evaluate_critic_loss=True)
 
         # for i in range(num_agents):
         #     wandb.log({f"Reward Achieved for Agent {i}": int(agent_list[i].is_task_complete), "Step": tester.get_global_step()})
@@ -283,13 +309,14 @@ def run_multi_agent_qlearning_test(agent_list,
         if all(agent.is_task_complete for agent in agent_list):
             break
 
-    for i in range(num_agents):
-        wandb.log({f"Reward Achieved for Agent {i}": int(agent_list[i].is_task_complete), "Test Trajectory": tester.get_global_step()})
+    # for i in range(num_agents):
+    #     wandb.log({f"Reward Achieved for Agent {i}": int(agent_list[i].is_task_complete), "Test Trajectory": tester.get_global_step()})
 
     if show_print:
-        print('Reward of {} achieved in {} steps. Current step: {} of {}'.format(testing_reward, step, tester.current_step, tester.total_steps))
+        print('Reward of {} achieved in {} steps. Current Trajectory: {} of {}'.format(testing_reward, step, tester.current_step, tester.total_steps))
+        testing_env.log_traj(trajectory, tester.get_global_step())
 
-    testing_env.log_traj(trajectory, tester.get_global_step())
+
     return testing_reward, trajectory, step
 
 def run_multi_agent_experiment(tester,num_agents,num_times,batch_size, buffer_size,show_print_1=True):
@@ -346,18 +373,26 @@ def run_multi_agent_experiment(tester,num_agents,num_times,batch_size, buffer_si
         epsilon = learning_params.initial_epsilon
 
         while not tester.stop_learning():
-            num_episodes += 1
+            # num_episodes += 1
+            # epsilon = epsilon*learning_params.exploration_fraction
 
-            epsilon = epsilon*learning_params.exploration_fraction
-
-            run_qlearning_task(epsilon,
+            epsilon = run_qlearning_task(epsilon,
                                 tester,
                                 agent_list,
                                 batch_size, 
                                 buffer_size,
                                 manager,
                                 show_print=show_print_1)
-            
+
+        # for _ in tqdm(range(tester.total_steps)):
+        #     epsilon = run_qlearning_task(epsilon,
+        #                         tester,
+        #                         agent_list,
+        #                         batch_size, 
+        #                         buffer_size,
+        #                         manager,
+        #                         show_print=show_print_1)
+
             
 
         # Backing up the results

@@ -11,6 +11,9 @@ import matplotlib.pyplot as plt
 
 import wandb
 
+from tqdm import tqdm
+
+
 def run_qlearning_task(epsilon,
                         tester,
                         agent_list,

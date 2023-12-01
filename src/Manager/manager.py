@@ -22,6 +22,11 @@ class Manager:
             agent_list[i].is_task_complete = 0
 
 
+        # 1) Take random batch of exp, evaluate each agent's policy across all assignments, see which assignment gets highest reward
+
+        # 
+
+
         # # Random assigning
         # for i, new_id in enumerate(np.random.permutation(len(agent_list))):
         #     agent_list[i].agent_id = new_id # to fix the hard coded stuff

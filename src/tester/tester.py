@@ -3,7 +3,7 @@ import time, os
 import matplotlib.pyplot as plt
 
 class Tester:
-    def __init__(self, learning_params, testing_params, min_steps = 1000, total_steps = 10000):
+    def __init__(self, learning_params, testing_params, min_steps = 1000, total_steps = 10000, total_trajs = 10):
         """
         Parameters
         ----------
@@ -23,6 +23,8 @@ class Tester:
         self.total_steps = total_steps
         self.current_step = 0
 
+        self.current_traj = 0
+
         # Store the results here
         self.results = {}
         self.steps = []
@@ -36,6 +38,7 @@ class Tester:
 
     def add_step(self):
         self.current_step += 1
+        # self.current_tra
     
     def add_global(self):
         self.global_step_counter += 1

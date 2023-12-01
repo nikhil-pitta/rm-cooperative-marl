@@ -688,7 +688,7 @@ class MultiAgentButtonsEnv:
 
         # plt.show()
 
-        wandb.log({"Buttons Image": wandb.Image(fig), "Testing Trajectory": step})
+        wandb.log({"Buttons Image": wandb.Image(fig), "Test Trajectory": step})
         
         plt.close()
 

@@ -38,7 +38,7 @@ def buttons_config(num_times, num_agents):
 
     ######### for deepqbuttons #############
     learning_params.initial_epsilon = 1
-    learning_params.exploration_fraction = 0.99
+    learning_params.exploration_fraction = 0.9
     ######### for deepqbuttons #############
 
 
@@ -48,6 +48,7 @@ def buttons_config(num_times, num_agents):
     tester.step_unit = step_unit
     tester.total_steps = 250 * step_unit # 100 * step_unit
     tester.min_steps = 1
+    # tester.total_trajs = 250 * 
 
     tester.num_times = num_times
     tester.num_agents = num_agents

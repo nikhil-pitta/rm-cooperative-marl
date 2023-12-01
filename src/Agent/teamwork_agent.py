@@ -48,6 +48,7 @@ class Agent:
         self.s = s_i
         self.actions = actions
         self.num_states = num_states
+        self.curr_loss = 0
 
         self.rm = ManagedSparseRewardMachine(self.rm_file)
         # self.u = self.rm.get_initial_state()
@@ -129,7 +130,7 @@ class Agent:
         
         return self.s, a
 
-    def update_agent(self, s_new, a, reward, label, learning_params, step, update_q_function=True, i=-1, evaluate_critic_loss=False):
+    def update_agent(self, s_new, reward, label, learning_params, step, update_q_function=True, i=-1, evaluate_critic_loss=False):
         """
         Update the agent's state, q-function, and reward machine after 
         interacting with the environment.
@@ -148,8 +149,8 @@ class Agent:
             Object storing parameters to be used in learning.
         """
 
-        # Keep track of the RM location at the start of the 
-        u_start = self.u
+        # # Keep track of the RM location at the start of the 
+        # u_start = self.u
 
         for event in label: # there really should only be one event in the label provided to an individual agent
             # Update the agent's RM
@@ -162,11 +163,11 @@ class Agent:
         #     wandb.log({f"Reward Achieved for Agent {i}": int(reward), "Step": self.tester.get_global_step()})
 
         if update_q_function == True:
-            self.update_q_function(self.s, s_new, u_start, self.u, a, reward, learning_params, step)
+            self.curr_loss = self.update_q_function(learning_params, step)
         
         # if evaluate_critic_loss:
-        #     self.eval_q_loss(self.s, s_new, u_start, self.u, a, reward, learning_params, step, i=i)
-        # else:
+        #      = self.eval_q_loss(self.s, s_new, u_start, self.u, a, reward, learning_params, step)
+        # # else:
         #     wandb.log({f"Critic Loss for Agent {i}": 1, 'Step': self.tester.get_global_step()})
 
         # Moving to the next state
@@ -176,7 +177,8 @@ class Agent:
             # Completed task. Set flag.
             self.is_task_complete = 1
 
-    def update_q_function(self, s, s_new, u, u_new, a, reward, learning_params, step):
+
+    def update_q_function(self, learning_params, step):
         """
         Update the q function using the action, states, and reward value.
 
@@ -207,6 +209,7 @@ class Agent:
         states, rm_states, actions, rewards, next_states, next_rm_states = map(ptu.from_numpy, [np.array(states), np.array(rm_states), np.array(actions), np.array(rewards), np.array(next_states), np.array(next_rm_states)])
         next_input = ptu.from_numpy(np.row_stack((np.array(next_states), np.array(next_rm_states))).T).float()
         curr_input = ptu.from_numpy(np.row_stack((np.array(states), np.array(rm_states))).T).float()
+        
 
         next_qa_values = self.Q_target(next_input)
 
@@ -237,6 +240,7 @@ class Agent:
         if step % self.target_network_update_period == 0:
             self.update_target_network()
 
+        return loss
         
     def update_target_network(self):
         # copy current_network to target network
