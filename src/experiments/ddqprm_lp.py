@@ -134,9 +134,6 @@ def run_qlearning_task(epsilon,
             total_testing_steps = 0
             total_agent_reward = [0]*num_agents
 
-
-                
-
             for n in range(num_iters):
                 testing_reward, trajectory, testing_steps = run_multi_agent_qlearning_test(agent_list_copy,
                                                                                             tester,
@@ -156,6 +153,8 @@ def run_qlearning_task(epsilon,
                        "Test Trajectory": tester.get_global_step()})
             
             for a_n in range(num_agents):
+                if total_agent_reward[a_n] > 0:
+                    print(a_n, manager.curr_assignment, agent_list_copy[a_n].local_event_set)
                 wandb.log({f"Reward Achieved for Agent {a_n}": total_agent_reward[a_n]/num_iters, "Test Trajectory": tester.get_global_step()})
                 wandb.log({f"Critic Loss for Agent {a_n}": agent_list[a_n].curr_loss, "Test Trajectory": tester.get_global_step()})
 
@@ -242,8 +241,7 @@ def run_multi_agent_qlearning_test(agent_list,
         testing_env = SearchAndRescueEnv(tester.rm_test_file, target_region, tester.env_settings)
     if tester.experiment == 'buttons':
         testing_env = MultiAgentButtonsEnv(tester.rm_test_file, num_agents, tester.env_settings)
-
-    manager.assign(agent_list)
+    manager.load_assignment(agent_list)
     for i in range(num_agents):
         agent_list[i].reset_state()
         # print(f"agent start {i}", agent_list[i].u)
@@ -253,9 +251,9 @@ def run_multi_agent_qlearning_test(agent_list,
     for i in range(num_agents):
         s_team[i] = agent_list[i].s
     a_team = np.full(num_agents, -1, dtype=int)
-    u_team = np.full(num_agents, -1, dtype=int)
-    for i in range(num_agents):
-        u_team[i] = agent_list[i].u
+    # u_team = np.full(num_agents, -1, dtype=int)
+    # for i in range(num_agents):
+    #     u_team[i] = agent_list[i].u
     testing_reward = 0
 
     trajectory = []
@@ -271,7 +269,7 @@ def run_multi_agent_qlearning_test(agent_list,
             s, a = agent_list[i].get_next_action(-1.0, learning_params)
             s_team[i] = s
             a_team[i] = a
-            u_team[i] = agent_list[i].u
+            # u_team[i] = agent_list[i].u
 
         # trajectory.append({'s' : np.array(s_team, dtype=int), 'a' : np.array(a_team, dtype=int), 'u_team': np.array(u_team, dtype=int), 'u': int(testing_env.u)})
 
@@ -357,7 +355,7 @@ def run_multi_agent_experiment(tester,num_agents,num_times,batch_size, buffer_si
             testing_env = MultiAgentButtonsEnv(tester.rm_test_file, num_agents, tester.env_settings)
             num_states = testing_env.num_states
 
-        manager = Manager(joined_rm_file, set_list, event_list)
+        manager = Manager(joined_rm_file, set_list, event_list, 3, "random")
 
         # Create the a list of agents for this experiment
         agent_list = [] 

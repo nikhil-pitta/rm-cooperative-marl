@@ -38,7 +38,7 @@ def buttons_config(num_times, num_agents):
 
     ######### for deepqbuttons #############
     learning_params.initial_epsilon = 1
-    learning_params.exploration_fraction = 0.9
+    learning_params.exploration_fraction = 0.98
     ######### for deepqbuttons #############
 
 
