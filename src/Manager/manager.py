@@ -1,5 +1,9 @@
 from reward_machines.managed_sparse_reward_machine import ManagedSparseRewardMachine
 import numpy as np
+import infrastructure.pytorch_utils as ptu
+import torch
+import random
+import itertools
 class Manager:
     def __init__(self, rm_file, set_list, event_list, num_agents, assignment_method = "ground_truth"):
         self.rm = ManagedSparseRewardMachine(rm_file)
@@ -13,30 +17,28 @@ class Manager:
         # print(self.set_list)
         self.curr_assignment = list(np.random.permutation([i for i in range(num_agents)]))
         self.assignment_method = assignment_method
+        self.num_agents = num_agents
 
         
 
 
     def assign(self, agent_list):
+        permutation_qs = self.calculate_permutation_qs(agent_list)
         if self.assignment_method == "ground_truth":
-            # Default assigning
-            for i in range(len(agent_list)):
-                agent_list[i].u = self.start_nodes[i]  # random assignment for now
-                agent_list[i].is_task_complete = 0
-            
             self.curr_assignment = [0,1,2]
-
         elif self.assignment_method == "random": 
-            self.curr_assignment = list(np.random.permutation([i for i in range(len(agent_list))]))
-            for i in range(len(agent_list)):
-                i_assigned = self.curr_assignment[i]
-                agent_list[i].u = self.start_nodes[i_assigned]
-                agent_list[i].is_task_complete = 0
+            self.curr_assignment = list(random.choice(list(permutation_qs.keys())))
+        elif self.assignment_method == "greedy":
+            self.curr_assignment = list(max(permutation_qs, key=permutation_qs.get))
         else:
             raise Exception("STUPID ASS MF")
+        
+        for i in range(len(agent_list)):
+            i_assigned = self.curr_assignment[i]
+            agent_list[i].u = self.start_nodes[i_assigned]
+            agent_list[i].is_task_complete = 0
 
         # 1) Take random batch of exp, evaluate each agent's policy across all assignments, see which assignment gets highest reward
-
         # 
 
 
@@ -62,5 +64,22 @@ class Manager:
     def get_events(self, agent_id):
         return self.event_list[self.curr_assignment[agent_id]]
         # return self.event_list[agent_id]
+
+
+    def calculate_permutation_qs(self, agent_list):
+        res = {}
+        for permutation in itertools.permutations(list(range(self.num_agents))):
+            q_sum = 0
+            for i in range(len(permutation)):
+                starting_rm_state = self.start_nodes[permutation[i]]
+                curr_state = np.row_stack(([agent_list[i].s_i], [starting_rm_state])).T
+                qa = agent_list[i].Q(ptu.from_numpy(curr_state).float())
+                q = torch.max(qa).item()
+                q_sum += q
+            
+            res[tuple(permutation)] = q_sum
+        return res
+                
+                
 
     

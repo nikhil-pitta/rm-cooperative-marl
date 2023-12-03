@@ -21,6 +21,7 @@ def run_qlearning_task(epsilon,
                         batch_size,
                         buffer_size,
                         manager,
+                        train_reward_buildup,
                         show_print=True, num_iters=5):
     """
     This code runs one q-learning episode. q-functions, and accumulated reward values of agents
@@ -60,6 +61,8 @@ def run_qlearning_task(epsilon,
         training_environments = []
         for i in range(num_agents):
             training_environments.append(ButtonsEnv(agent_list[i].rm_file, i+1, tester.env_settings, manager))
+
+    broke_loop = False
 
     for t in range(num_steps):
         # Update step count
@@ -106,6 +109,7 @@ def run_qlearning_task(epsilon,
 
         # If enough steps have elapsed, test and save the performance of the agents.
         if testing_params.test and tester.get_current_step() % testing_params.test_freq == 0:
+            # print("TEST")
 
             t_init = time.time()
             step = tester.get_current_step()
@@ -147,14 +151,15 @@ def run_qlearning_task(epsilon,
                 for k in range(num_agents):
                     total_agent_reward[k] += int(agent_list_copy[k].is_task_complete)
 
-            wandb.log({'Episode Reward': total_testing_reward/num_iters, 
+            wandb.log({'Episode Reward': (total_testing_reward + sum(train_reward_buildup))/ (num_iters + len(train_reward_buildup)), 
                        "Episode Epsilon": epsilon, 
                        'Number of Steps Reward Achieved': total_testing_steps/num_iters, 
                        "Test Trajectory": tester.get_global_step()})
+            train_reward_buildup.clear()
             
             for a_n in range(num_agents):
-                if total_agent_reward[a_n] > 0:
-                    print(a_n, manager.curr_assignment, agent_list_copy[a_n].local_event_set)
+                # if total_agent_reward[a_n] > 0:
+                #     print(a_n, manager.curr_assignment, agent_list_copy[a_n].local_event_set)
                 wandb.log({f"Reward Achieved for Agent {a_n}": total_agent_reward[a_n]/num_iters, "Test Trajectory": tester.get_global_step()})
                 wandb.log({f"Critic Loss for Agent {a_n}": agent_list[a_n].curr_loss, "Test Trajectory": tester.get_global_step()})
 
@@ -189,6 +194,7 @@ def run_qlearning_task(epsilon,
         
         # If the agents has completed its task, reset it to its initial state.
         if all(agent.is_task_complete for agent in agent_list):
+            train_reward_buildup.append(1)
             manager.assign(agent_list)
             for i in range(num_agents):
                 agent_list[i].reset_state()
@@ -197,12 +203,17 @@ def run_qlearning_task(epsilon,
             
             # Make sure we've run at least the minimum number of training steps before breaking the loop
             if tester.stop_task(t):
+                broke_loop = True
                 break
 
         # checking the steps time-out
         if tester.stop_learning():
+            train_reward_buildup.append(0)
+            broke_loop = True
             break
     
+    if not broke_loop:
+        train_reward_buildup.append(0)
     return epsilon
 
 def run_multi_agent_qlearning_test(agent_list,
@@ -369,17 +380,18 @@ def run_multi_agent_experiment(tester,num_agents,num_times,batch_size, buffer_si
 
         # Task loop
         epsilon = learning_params.initial_epsilon
-
+        train_reward_buildup = []
         while not tester.stop_learning():
             # num_episodes += 1
             # epsilon = epsilon*learning_params.exploration_fraction
-
+            # print("TRAIN")
             epsilon = run_qlearning_task(epsilon,
                                 tester,
                                 agent_list,
                                 batch_size, 
                                 buffer_size,
                                 manager,
+                                train_reward_buildup,
                                 show_print=show_print_1)
 
         # for _ in tqdm(range(tester.total_steps)):
