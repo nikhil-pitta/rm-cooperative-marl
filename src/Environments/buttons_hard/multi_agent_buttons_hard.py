@@ -23,7 +23,7 @@ class Actions(Enum):
     left  = 3 # move left
     none  = 4 # none 
 
-class MultiAgentButtonsEnv:
+class HardMultiAgentButtonsEnv:
 
     def __init__(self, rm_file, num_agents, env_settings):
         """
@@ -72,9 +72,6 @@ class MultiAgentButtonsEnv:
         self.objects[self.env_settings['yellow_button']] = 'yb'
         self.objects[self.env_settings['green_button']] = 'gb'
         self.objects[self.env_settings['red_button']] = 'rb'
-        self.yellow_tiles = self.env_settings['yellow_tiles']
-        self.green_tiles = self.env_settings['green_tiles']
-        self.red_tiles = self.env_settings['red_tiles']
 
         self.p = self.env_settings['p']
 
@@ -142,14 +139,11 @@ class MultiAgentButtonsEnv:
         (row2, col2) = self.get_state_description(s_next[agent2])
         (row3, col3) = self.get_state_description(s_next[agent3])
 
-        if (row1, col1) == self.env_settings['yellow_button']:
+        if (row1, col1) == self.env_settings['yellow_button'] or (row2, col2) == self.env_settings['yellow_button'] or (row3, col3) == self.env_settings['yellow_button']:
             self.yellow_button_pushed = True
-        if (row2, col2) == self.env_settings['green_button']:
+        if (row1, col1) == self.env_settings['green_button'] or (row2, col2) == self.env_settings['green_button'] or (row3, col3) == self.env_settings['green_button']:
             self.green_button_pushed = True
-
-        (row2_last, col2_last) = self.get_state_description(s[agent2])
-        (row3_last, col3_last) = self.get_state_description(s[agent3])
-        if ((row2, col2) == self.env_settings['red_button']) and ((row3, col3) == self.env_settings['red_button']) and ((row2_last, col2_last) == self.env_settings['red_button']) and ((row3_last, col3_last) == self.env_settings['red_button']):
+        if (row2, col2) == self.env_settings['red_button'] or (row3, col3) == self.env_settings['red_button'] or (row1, col1) == self.env_settings['red_button']:
             self.red_button_pushed = True
 
         l = self.get_mdp_label(s, s_next, self.u)
@@ -229,20 +223,6 @@ class MultiAgentButtonsEnv:
                 col += 1
 
         s_next = self.get_state_from_description(row, col)
-
-        # If the appropriate button hasn't yet been pressed, don't allow the agent into the colored region
-        if agent_id == 0:
-            if (self.u == 0) or (self.u == 1) or (self.u == 2) or (self.u == 3) or (self.u == 4) or (self.u == 5):
-                if (row, col) in self.red_tiles:
-                    s_next = s
-        if agent_id == 1:
-            if (self.u == 0):
-                if (row, col) in self.yellow_tiles:
-                    s_next = s
-        if agent_id == 2:
-            if (self.u == 0) or (self.u == 1):
-                if (row, col) in self.green_tiles:
-                    s_next = s
 
         last_action = a_
         return s_next, last_action
@@ -374,37 +354,16 @@ class MultiAgentButtonsEnv:
         row3, col3 = self.get_state_description(s_next[agent3])
 
         if u == 0:
-        # Now check if agents are on buttons
-            if not ((row2, col2) in self.yellow_tiles) and (row1,col1) == self.env_settings['yellow_button']:
+            if (row1,col1) == self.env_settings['yellow_button'] or (row2,col2) == self.env_settings['yellow_button'] or (row3,col3) == self.env_settings['yellow_button']:
                 l.append('by')
         if u == 1:
-            if not ((row3, col3) in self.green_tiles) and (row2, col2) == self.env_settings['green_button']:
+            if (row1, col1) == self.env_settings['green_button'] or (row2, col2) == self.env_settings['green_button'] or (row3, col3) == self.env_settings['green_button']:
                 l.append('bg')
         if u == 2:
-            if (row2, col2) == self.env_settings['red_button']:
-                l.append('a2br')
-            if (row3, col3) == self.env_settings['red_button']:
-                l.append('a3br')
-        if u == 3:
-            if not ((row2, col2) == self.env_settings['red_button']):
-                l.append('a2lr')
-            if (row3, col3) == self.env_settings['red_button']:
-                l.append('a3br')
-        if u == 4:
-            if (row2, col2) == self.env_settings['red_button']:
-                l.append('a2br')
-            if not ((row3, col3) == self.env_settings['red_button']):
-                l.append('a3lr')
-        if u == 5:
-            if ((row2, col2) == self.env_settings['red_button']) and ((row3, col3) == self.env_settings['red_button']):
+            if (row3, col3) == self.env_settings['red_button'] or (row2, col2) == self.env_settings['red_button'] or (row1, col1) == self.env_settings['red_button']:
                 l.append('br')
-            if not ((row2, col2) == self.env_settings['red_button']):
-                l.append('a2lr')
-            if not ((row3, col3) == self.env_settings['red_button']):
-                l.append('a3lr')
-        if u == 6:
-            # Check if agent 1 has reached the goal
-            if (row1, col1) == self.env_settings['goal_location']:
+        if u == 3:
+            if (row1, col1) == self.env_settings['goal_location'] or (row2, col2) == self.env_settings['goal_location'] or (row3, col3) == self.env_settings['goal_location']:
                 l.append('g')
 
         return l
@@ -634,16 +593,6 @@ class MultiAgentButtonsEnv:
         pseudo_display[self.env_settings['goal_location']] = color_to_num['gold']
 
 
-        for loc in self.red_tiles:
-            display[loc] = 8
-            pseudo_display[loc] = color_to_num['red']
-        for loc in self.green_tiles:
-            display[loc] = 8
-            pseudo_display[loc] = color_to_num['green']
-        for loc in self.yellow_tiles:
-            display[loc] = 8
-            pseudo_display[loc] = color_to_num['yellow']
-
         # Display the agents
         real_agent_traj = [[] for i in range(self.num_agents)]
         for t in range(len(trajectory)):
@@ -692,70 +641,70 @@ class MultiAgentButtonsEnv:
         
         plt.close()
 
-def play():
-    n = 3 # num agents
-    base_file_dir = os.path.abspath(os.path.join(os.getcwd(), '../../..'))
-    rm_string = os.path.join(base_file_dir, 'experiments', 'buttonsCopy', 'team_buttons_rm.txt')
+# def play():
+#     n = 3 # num agents
+#     base_file_dir = os.path.abspath(os.path.join(os.getcwd(), '../../..'))
+#     rm_string = os.path.join(base_file_dir, 'experiments', 'buttonsCopy', 'team_buttons_rm.txt')
     
-    # Set the environment settings for the experiment
-    env_settings = dict()
-    env_settings['Nr'] = 10
-    env_settings['Nc'] = 10
-    env_settings['initial_states'] = [0, 5, 8]
-    env_settings['walls'] = [(0, 3), (1, 3), (2, 3), (3,3), (4,3), (5,3), (6,3), (7,3),
-                                (7,4), (7,5), (7,6), (7,7), (7,8), (7,9),
-                                (0,7), (1,7), (2,7), (3,7), (4,7) ]
-    env_settings['goal_location'] = (8,9)
-    env_settings['yellow_button'] = (0,2)
-    env_settings['green_button'] = (5,6)
-    env_settings['red_button'] = (6,9)
-    env_settings['yellow_tiles'] = [(2,4), (2,5), (2,6), (3,4), (3,5), (3,6)]
-    env_settings['green_tiles'] = [(2,8), (2,9), (3,8), (3,9)]
-    env_settings['red_tiles'] = [(8,5), (8,6), (8,7), (8,8), (9,5), (9,6), (9,7), (9,8)]
+#     # Set the environment settings for the experiment
+#     env_settings = dict()
+#     env_settings['Nr'] = 10
+#     env_settings['Nc'] = 10
+#     env_settings['initial_states'] = [0, 5, 8]
+#     env_settings['walls'] = [(0, 3), (1, 3), (2, 3), (3,3), (4,3), (5,3), (6,3), (7,3),
+#                                 (7,4), (7,5), (7,6), (7,7), (7,8), (7,9),
+#                                 (0,7), (1,7), (2,7), (3,7), (4,7) ]
+#     env_settings['goal_location'] = (8,9)
+#     env_settings['yellow_button'] = (0,2)
+#     env_settings['green_button'] = (5,6)
+#     env_settings['red_button'] = (6,9)
+#     env_settings['yellow_tiles'] = [(2,4), (2,5), (2,6), (3,4), (3,5), (3,6)]
+#     env_settings['green_tiles'] = [(2,8), (2,9), (3,8), (3,9)]
+#     env_settings['red_tiles'] = [(8,5), (8,6), (8,7), (8,8), (9,5), (9,6), (9,7), (9,8)]
 
-    env_settings['p'] = 1.0
+#     env_settings['p'] = 1.0
     
-    game = MultiAgentButtonsEnv(rm_string, n, env_settings)
+#     game = MultiAgentButtonsEnv(rm_string, n, env_settings)
 
-    # User inputs
-    str_to_action = {"w":Actions.up.value,"d":Actions.right.value,"s":Actions.down.value,"a":Actions.left.value,"x":Actions.none.value}
+#     # User inputs
+#     str_to_action = {"w":Actions.up.value,"d":Actions.right.value,"s":Actions.down.value,"a":Actions.left.value,"x":Actions.none.value}
 
-    s = game.get_initial_team_state()
-    print(s)
+#     s = game.get_initial_team_state()
+#     print(s)
 
-    while True:
-        # Showing game
-        game.show(s)
+#     while True:
+#         # Showing game
+#         game.show(s)
 
-        # Getting action
-        a = np.full(n, -1, dtype=int)
+#         # Getting action
+#         a = np.full(n, -1, dtype=int)
         
-        for i in range(n):
-            print('\nAction{}?'.format(i+1), end='')
-            usr_inp = input()
-            print()
+#         for i in range(n):
+#             print('\nAction{}?'.format(i+1), end='')
+#             usr_inp = input()
+#             print()
 
-            if not(usr_inp in str_to_action):
-                print('forbidden action')
-                a[i] = str_to_action['x']
-            else:
-                print(str_to_action[usr_inp])
-                a[i] = str_to_action[usr_inp]
+#             if not(usr_inp in str_to_action):
+#                 print('forbidden action')
+#                 a[i] = str_to_action['x']
+#             else:
+#                 print(str_to_action[usr_inp])
+#                 a[i] = str_to_action[usr_inp]
 
-        r, l, s = game.environment_step(s, a)
+#         r, l, s = game.environment_step(s, a)
         
-        print("---------------------")
-        print("Next States: ", s)
-        print("Label: ", l)
-        print("Reward: ", r)
-        print("RM state: ", game.u)
-        print('Meta state: ', game.get_meta_state(0))
-        print("---------------------")
+#         print("---------------------")
+#         print("Next States: ", s)
+#         print("Label: ", l)
+#         print("Reward: ", r)
+#         print("RM state: ", game.u)
+#         print('Meta state: ', game.get_meta_state(0))
+#         print("---------------------")
 
-        if game.reward_machine.is_terminal_state(game.u): # Game Over
-                break 
-    game.show(s)
+#         if game.reward_machine.is_terminal_state(game.u): # Game Over
+#                 break 
+#     game.show(s)
     
-# This code allow to play a game (for debugging purposes)
-if __name__ == '__main__':
-    play()
+# # This code allow to play a game (for debugging purposes)
+# if __name__ == '__main__':
+#     play()

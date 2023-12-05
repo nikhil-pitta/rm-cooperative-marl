@@ -19,7 +19,7 @@ class Actions(Enum):
     left  = 3 # move left
     none  = 4 # none 
 
-class ButtonsEnv:
+class HardButtonsEnv:
 
     def __init__(self, rm_file, agent_id, env_settings, manager):
         """
@@ -131,40 +131,33 @@ class ButtonsEnv:
 
         thresh = 0.3 #0.3
 
-        if self.agent_id == 1:
-            if u == 1:
-                if (row, col) == self.env_settings['yellow_button']:
-                    l.append('by')
-            if u == 2:
-                if np.random.random() <= thresh:
-                    l.append('br')
-            if u == 3:
-                if (row, col) == self.env_settings['goal_location']:
-                    l.append('g')
-        elif self.agent_id == 2:
-            if u == 5:
-                if np.random.random() <= thresh:
-                    l.append('by')
-            if u == 6 and (row,col) == self.env_settings['green_button']:
+        if u == 1:
+            if (row, col) == self.env_settings['yellow_button']:
+                l.append('by')
+        if u == 2:
+            if (row, col) == self.env_settings['red_button']:
+                l.append('br')
+            elif np.random.random() <= thresh:
+                l.append('br')
+        if u == 3:
+            if (row, col) == self.env_settings['goal_location']:
+                l.append('g')
+        if u == 5:
+            if (row, col) == self.env_settings['yellow_button']:
+                l.append('by')
+            elif np.random.random() <= thresh:
+                l.append('by')
+        if u == 6: 
+            if (row,col) == self.env_settings['green_button']:
                 l.append('bg')
-            if u == 7 and (row,col) == self.env_settings['red_button']:
-                l.append('a2br')
-            if u == 8: 
-                if not((row,col) == self.env_settings['red_button']):
-                    l.append('a2lr')
-                elif np.random.random() <= thresh:
-                    l.append('br')
-        elif self.agent_id == 3:
-            if u == 10:
-                if np.random.random() <= thresh:
-                    l.append('bg')
-            if u == 11 and (row,col) == self.env_settings['red_button']:
-                l.append('a3br')
-            if u == 12: 
-                if not((row,col) == self.env_settings['red_button']):
-                    l.append('a3lr')
-                elif np.random.random() <= thresh:
-                    l.append('br')
+        if u == 8: 
+            if (row, col) == self.env_settings['green_button']:
+                l.append('bg')
+            elif np.random.random() <= thresh:
+                l.append('bg')
+        if u == 9:
+            if (row,col) == self.env_settings['red_button']:
+                l.append('br')
 
         return l
 
@@ -232,23 +225,6 @@ class ButtonsEnv:
                 col += 1
 
         s_next = self.get_state_from_description(row, col)
-
-        # If the appropriate button hasn't yet been pressed, don't allow the agent into the colored region
-        if self.agent_id == 1:
-            if self.u == 1:
-                if (row, col) in self.red_tiles:
-                    s_next = s
-            if self.u == 2:
-                if (row, col) in self.red_tiles:
-                    s_next = s
-        if self.agent_id == 2:
-            if self.u == 5:
-                if (row, col) in self.yellow_tiles:
-                    s_next = s
-        if self.agent_id == 3:
-            if self.u == 10:
-                if (row, col) in self.green_tiles:
-                    s_next = s
 
         last_action = a_
         return s_next, last_action
@@ -334,78 +310,71 @@ class ButtonsEnv:
         display[self.env_settings['yellow_button']] = 9
         display[self.env_settings['goal_location']] = 9
 
-        for loc in self.red_tiles:
-            display[loc] = 8
-        for loc in self.green_tiles:
-            display[loc] = 8
-        for loc in self.yellow_tiles:
-            display[loc] = 8
-
         # Display the location of the agent in the world
         row, col = self.get_state_description(s)
         display[row,col] = self.agent_id
 
         print(display)
 
-def play():
-    agent_id = 2
-    base_file_dir = os.path.abspath(os.path.join(os.getcwd(), '../../..'))
-    rm_string = os.path.join(base_file_dir, 'experiments', 'buttons', 'buttons_rm_agent_{}.txt'.format(agent_id))
+# def play():
+#     agent_id = 2
+#     base_file_dir = os.path.abspath(os.path.join(os.getcwd(), '../../..'))
+#     rm_string = os.path.join(base_file_dir, 'experiments', 'buttons', 'buttons_rm_agent_{}.txt'.format(agent_id))
     
-    # Set the environment settings for the experiment
-    env_settings = dict()
-    env_settings['Nr'] = 10
-    env_settings['Nc'] = 10
-    env_settings['initial_states'] = [0, 5, 8]
-    env_settings['walls'] = [(0, 3), (1, 3), (2, 3), (3,3), (4,3), (5,3), (6,3), (7,3),
-                                (7,4), (7,5), (7,6), (7,7), (7,8), (7,9),
-                                (0,7), (1,7), (2,7), (3,7), (4,7) ]
-    env_settings['goal_location'] = (8,9)
-    env_settings['yellow_button'] = (0,2)
-    env_settings['green_button'] = (5,6)
-    env_settings['red_button'] = (6,9)
-    env_settings['yellow_tiles'] = [(2,4), (2,5), (2,6), (3,4), (3,5), (3,6)]
-    env_settings['green_tiles'] = [(2,8), (2,9), (3,8), (3,9)]
-    env_settings['red_tiles'] = [(8,5), (8,6), (8,7), (8,8), (9,5), (9,6), (9,7), (9,8)]
+#     # Set the environment settings for the experiment
+#     env_settings = dict()
+#     env_settings['Nr'] = 10
+#     env_settings['Nc'] = 10
+#     env_settings['initial_states'] = [0, 5, 8]
+#     env_settings['walls'] = [(0, 3), (1, 3), (2, 3), (3,3), (4,3), (5,3), (6,3), (7,3),
+#                                 (7,4), (7,5), (7,6), (7,7), (7,8), (7,9),
+#                                 (0,7), (1,7), (2,7), (3,7), (4,7) ]
+#     env_settings['goal_location'] = (8,9)
+#     env_settings['yellow_button'] = (0,2)
+#     env_settings['green_button'] = (5,6)
+#     env_settings['red_button'] = (6,9)
+#     env_settings['yellow_tiles'] = [(2,4), (2,5), (2,6), (3,4), (3,5), (3,6)]
+#     env_settings['green_tiles'] = [(2,8), (2,9), (3,8), (3,9)]
+#     env_settings['red_tiles'] = [(8,5), (8,6), (8,7), (8,8), (9,5), (9,6), (9,7), (9,8)]
 
-    env_settings['p'] = 0.99
+#     env_settings['p'] = 0.99
 
-    game = ButtonsEnv(rm_string, agent_id, env_settings)
+#     game = ButtonsEnv(rm_string, agent_id, env_settings)
 
-    # User inputs
-    str_to_action = {"w":Actions.up.value,"d":Actions.right.value,"s":Actions.down.value,"a":Actions.left.value,"x":Actions.none.value}
+#     # User inputs
+#     str_to_action = {"w":Actions.up.value,"d":Actions.right.value,"s":Actions.down.value,"a":Actions.left.value,"x":Actions.none.value}
 
-    s = game.get_initial_state()
+#     s = game.get_initial_state()
 
-    failed_task_flag = False
+#     failed_task_flag = False
 
-    while True:
-        # Showing game
-        game.show(s)
+#     while True:
+#         # Showing game
+#         game.show(s)
 
-        # Getting action
-        print("\nAction? ", end="")
-        a = input()
-        print()
-        # Executing action
-        if a in str_to_action:
-            r, l, s, failed_task_flag = game.environment_step(s, str_to_action[a])
+#         # Getting action
+#         print("\nAction? ", end="")
+#         a = input()
+#         print()
+#         # Executing action
+#         if a in str_to_action:
+#             r, l, s, failed_task_flag = game.environment_step(s, str_to_action[a])
         
-            print("---------------------")
-            print("Next States: ", s)
-            print("Label: ", l)
-            print("Reward: ", r)
-            print("RM state: ", game.u)
-            print("failed task: ", failed_task_flag)
-            print("---------------------")
+#             print("---------------------")
+#             print("Next States: ", s)
+#             print("Label: ", l)
+#             print("Reward: ", r)
+#             print("RM state: ", game.u)
+#             print("failed task: ", failed_task_flag)
+#             print("---------------------")
 
-            if game.reward_machine.is_terminal_state(game.u): # Game Over
-                    break 
+#             if game.reward_machine.is_terminal_state(game.u): # Game Over
+#                     break 
             
-        else:
-            print("Forbidden action")
-    game.show(s)
+#         else:
+#             print("Forbidden action")
+#     game.show(s)
     
-# This code allow to play a game (for debugging purposes)
-if __name__ == '__main__':
-    play()
+# # This code allow to play a game (for debugging purposes)
+# if __name__ == '__main__':
+#     play()

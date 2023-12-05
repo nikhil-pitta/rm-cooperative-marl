@@ -18,7 +18,7 @@ def hard_buttons_config(num_times, num_agents):
 
     local_rm_files = []
     for i in range(num_agents):
-        local_rm_string = os.path.join(base_file_path, 'experiments', 'buttons', 'buttons_rm_agent_{}.txt'.format(i+1))
+        local_rm_string = os.path.join(base_file_path, 'experiments', 'buttons_hard', 'buttons_rm_agent_{}.txt'.format(i+1))
         local_rm_files.append(local_rm_string)
 
     step_unit = 1000

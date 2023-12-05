@@ -9,6 +9,8 @@ from Environments.coop_buttons.buttons_env_teamwork import ButtonsEnv
 from Environments.coop_buttons.multi_agent_buttons_env import MultiAgentButtonsEnv
 from Environments.rendezvous.gridworld_env import GridWorldEnv
 from Environments.rendezvous.multi_agent_gridworld_env import MultiAgentGridWorldEnv
+from Environments.buttons_hard.buttons_hard import HardButtonsEnv
+from Environments.buttons_hard.multi_agent_buttons_hard import HardMultiAgentButtonsEnv
 import matplotlib.pyplot as plt
 import infrastructure.rm_utils as rm_builder
 from Manager.manager import Manager
@@ -62,6 +64,10 @@ def run_qlearning_task(epsilon,
         training_environments = []
         for i in range(num_agents):
             training_environments.append(ButtonsEnv(agent_list[i].rm_file, i+1, tester.env_settings, manager))
+    if tester.experiment == "buttons_hard":
+        training_environments = []
+        for i in range(num_agents):
+            training_environments.append(HardButtonsEnv(agent_list[i].rm_file, i+1, tester.env_settings, manager))
 
     broke_loop = False
 
@@ -260,6 +266,8 @@ def run_multi_agent_qlearning_test(agent_list,
         testing_env = SearchAndRescueEnv(tester.rm_test_file, target_region, tester.env_settings)
     if tester.experiment == 'buttons':
         testing_env = MultiAgentButtonsEnv(tester.rm_test_file, num_agents, tester.env_settings)
+    if tester.experiment == 'buttons_hard':
+        testing_env = HardMultiAgentButtonsEnv(tester.rm_test_file, num_agents, tester.env_settings)
     manager.load_assignment(agent_list)
     for i in range(num_agents):
         agent_list[i].reset_state()
@@ -372,6 +380,9 @@ def run_multi_agent_experiment(tester,num_agents,num_times,batch_size, buffer_si
             num_states = testing_env.num_states
         if tester.experiment == 'buttons':
             testing_env = MultiAgentButtonsEnv(tester.rm_test_file, num_agents, tester.env_settings)
+            num_states = testing_env.num_states
+        if tester.experiment == 'buttons_hard':
+            testing_env = HardMultiAgentButtonsEnv(tester.rm_test_file, num_agents, tester.env_settings)
             num_states = testing_env.num_states
 
         manager = Manager(joined_rm_file, set_list, event_list, 3, assignment_method)
