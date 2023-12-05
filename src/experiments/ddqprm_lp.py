@@ -12,6 +12,7 @@ from Environments.rendezvous.multi_agent_gridworld_env import MultiAgentGridWorl
 import matplotlib.pyplot as plt
 import infrastructure.rm_utils as rm_builder
 from Manager.manager import Manager
+import itertools
 
 from tqdm import tqdm
 
@@ -162,6 +163,10 @@ def run_qlearning_task(epsilon,
                 #     print(a_n, manager.curr_assignment, agent_list_copy[a_n].local_event_set)
                 wandb.log({f"Reward Achieved for Agent {a_n}": total_agent_reward[a_n]/num_iters, "Test Trajectory": tester.get_global_step()})
                 wandb.log({f"Critic Loss for Agent {a_n}": agent_list[a_n].curr_loss, "Test Trajectory": tester.get_global_step()})
+
+            permutation_q_log = {f"{permutation}": manager.curr_permutation_qs[permutation] for permutation in itertools.permutations(list(range(num_agents)))}
+            permutation_q_log["Test Trajectory"] = tester.get_global_step()
+            wandb.log(permutation_q_log)
 
             tester.add_global()
 
@@ -328,7 +333,7 @@ def run_multi_agent_qlearning_test(agent_list,
 
     return testing_reward, trajectory, step
 
-def run_multi_agent_experiment(tester,num_agents,num_times,batch_size, buffer_size,show_print_1=True):
+def run_multi_agent_experiment(tester,num_agents,num_times,batch_size, buffer_size, assignment_method, show_print_1=True):
     """
     Run the entire q-learning with reward machines experiment a number of times specified by num_times.
 
@@ -366,7 +371,7 @@ def run_multi_agent_experiment(tester,num_agents,num_times,batch_size, buffer_si
             testing_env = MultiAgentButtonsEnv(tester.rm_test_file, num_agents, tester.env_settings)
             num_states = testing_env.num_states
 
-        manager = Manager(joined_rm_file, set_list, event_list, 3, "random")
+        manager = Manager(joined_rm_file, set_list, event_list, 3, assignment_method)
 
         # Create the a list of agents for this experiment
         agent_list = [] 

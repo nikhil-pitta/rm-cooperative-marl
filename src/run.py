@@ -14,9 +14,12 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Multi-agent experiment runner.")
     parser.add_argument("--experiment_name", type=str, default="dbuttons", 
                         help="Name of the experiment")
+    parser.add_argument("--assignment_method", type = str, default = "ground_truth", help = "Name of subtask assignment method")
+
     args = parser.parse_args()
     
     experiment = args.experiment_name
+    assignment_method = args.assignment_method
 
     wandb.init(project = experiment)
     wandb.define_metric("Test Trajectory")
@@ -79,8 +82,15 @@ if __name__ == "__main__":
         from experiments.ddqprm_lp import run_multi_agent_experiment
         num_agents = 3 # Num agents must be 3 for this example
         tester = buttons_config(num_times, num_agents)
-        run_multi_agent_experiment(tester, num_agents, num_times, 512, 5000)
-
+        run_multi_agent_experiment(tester, num_agents, num_times, 512, 5000, assignment_method)
+    
+    if experiment == "lpdbuttons_hard":
+        from buttons_config import hard_buttons_config
+        from experiments.ddqprm_lp import run_multi_agent_experiment
+        num_agents = 3
+        tester = hard_buttons_config(num_times, num_agents)
+        run_multi_agent_experiment(tester, num_agents, num_times, 512, 5000, assignment_method)
+        
     if experiment == 'ihrl_buttons':
         from buttons_config import buttons_config
         from experiments.run_ihrl_experiment import run_ihrl_experiment

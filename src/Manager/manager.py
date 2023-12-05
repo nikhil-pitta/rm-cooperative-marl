@@ -18,18 +18,24 @@ class Manager:
         self.curr_assignment = list(np.random.permutation([i for i in range(num_agents)]))
         self.assignment_method = assignment_method
         self.num_agents = num_agents
+        self.curr_permutation_qs = {}
+        self.epsilon = 1
+        self.epsilon_decay = 0.9
 
-        
 
 
     def assign(self, agent_list):
-        permutation_qs = self.calculate_permutation_qs(agent_list)
+        self.curr_permutation_qs = self.calculate_permutation_qs(agent_list)
         if self.assignment_method == "ground_truth":
             self.curr_assignment = [0,1,2]
         elif self.assignment_method == "random": 
-            self.curr_assignment = list(random.choice(list(permutation_qs.keys())))
-        elif self.assignment_method == "greedy":
-            self.curr_assignment = list(max(permutation_qs, key=permutation_qs.get))
+            self.curr_assignment = list(random.choice(list(self.curr_permutation_qs.keys())))
+        elif self.assignment_method == "epsilon_greedy":
+            if random.random() < self.epsilon:
+                self.curr_assignment = list(random.choice(list(self.curr_permutation_qs.keys())))
+            else:
+                self.curr_assignment = list(max(self.curr_permutation_qs, key=self.curr_permutation_qs.get))
+            self.epsilon *= self.epsilon_decay
         else:
             raise Exception("STUPID ASS MF")
         

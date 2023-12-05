@@ -59,9 +59,6 @@ class ButtonsEnv:
         self.objects[self.env_settings['yellow_button']] = 'yb'
         self.objects[self.env_settings['green_button']] = 'gb'
         self.objects[self.env_settings['red_button']] = 'rb'
-        self.yellow_tiles = self.env_settings['yellow_tiles']
-        self.green_tiles = self.env_settings['green_tiles']
-        self.red_tiles = self.env_settings['red_tiles']
 
         self.p = self.env_settings['p']
 
@@ -134,37 +131,40 @@ class ButtonsEnv:
 
         thresh = 0.3 #0.3
 
-        if u == 1:
-            if (row, col) == self.env_settings['yellow_button']:
-                l.append('by')
-        if u == 2:
-            if np.random.random() <= thresh:
-                l.append('br')
-        if u == 3:
-            if (row, col) == self.env_settings['goal_location']:
-                l.append('g')
-        if u == 5:
-            if np.random.random() <= thresh:
-                l.append('by')
-        if u == 6 and (row,col) == self.env_settings['green_button']:
-            l.append('bg')
-        if u == 7 and (row,col) == self.env_settings['red_button']:
-            l.append('a2br')
-        if u == 8: 
-            if not((row,col) == self.env_settings['red_button']):
-                l.append('a2lr')
-            elif np.random.random() <= thresh:
-                l.append('br')
-        if u == 10:
-            if np.random.random() <= thresh:
+        if self.agent_id == 1:
+            if u == 1:
+                if (row, col) == self.env_settings['yellow_button']:
+                    l.append('by')
+            if u == 2:
+                if np.random.random() <= thresh:
+                    l.append('br')
+            if u == 3:
+                if (row, col) == self.env_settings['goal_location']:
+                    l.append('g')
+        elif self.agent_id == 2:
+            if u == 5:
+                if np.random.random() <= thresh:
+                    l.append('by')
+            if u == 6 and (row,col) == self.env_settings['green_button']:
                 l.append('bg')
-        if u == 11 and (row,col) == self.env_settings['red_button']:
-            l.append('a3br')
-        if u == 12: 
-            if not((row,col) == self.env_settings['red_button']):
-                l.append('a3lr')
-            elif np.random.random() <= thresh:
-                l.append('br')
+            if u == 7 and (row,col) == self.env_settings['red_button']:
+                l.append('a2br')
+            if u == 8: 
+                if not((row,col) == self.env_settings['red_button']):
+                    l.append('a2lr')
+                elif np.random.random() <= thresh:
+                    l.append('br')
+        elif self.agent_id == 3:
+            if u == 10:
+                if np.random.random() <= thresh:
+                    l.append('bg')
+            if u == 11 and (row,col) == self.env_settings['red_button']:
+                l.append('a3br')
+            if u == 12: 
+                if not((row,col) == self.env_settings['red_button']):
+                    l.append('a3lr')
+                elif np.random.random() <= thresh:
+                    l.append('br')
 
         return l
 
