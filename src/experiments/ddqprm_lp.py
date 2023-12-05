@@ -200,6 +200,9 @@ def run_qlearning_task(epsilon,
         # If the agents has completed its task, reset it to its initial state.
         if all(agent.is_task_complete for agent in agent_list):
             train_reward_buildup.append(1)
+            # FOR UCB, updating trajectory reward
+            manager.update_rewards(manager.curr_assignment, 1)
+
             manager.assign(agent_list)
             for i in range(num_agents):
                 agent_list[i].reset_state()
