@@ -11,6 +11,8 @@ from Environments.rendezvous.gridworld_env import GridWorldEnv
 from Environments.rendezvous.multi_agent_gridworld_env import MultiAgentGridWorldEnv
 from Environments.buttons_hard.buttons_hard import HardButtonsEnv
 from Environments.buttons_hard.multi_agent_buttons_hard import HardMultiAgentButtonsEnv
+from Environments.buttons_fair.buttons_fair import FairButtonsEnv
+from Environments.buttons_fair.multi_agent_buttons_fair import FairMultiAgentButtonsEnv
 import matplotlib.pyplot as plt
 import infrastructure.rm_utils as rm_builder
 from Manager.manager import Manager
@@ -68,6 +70,10 @@ def run_qlearning_task(epsilon,
         training_environments = []
         for i in range(num_agents):
             training_environments.append(HardButtonsEnv(agent_list[i].rm_file, i+1, tester.env_settings, manager))
+    if tester.experiment == "buttons_fair":
+        training_environments = []
+        for i in range(num_agents):
+            training_environments.append(FairButtonsEnv(agent_list[i].rm_file, i+1, tester.env_settings, manager))
 
     broke_loop = False
 
@@ -268,6 +274,8 @@ def run_multi_agent_qlearning_test(agent_list,
         testing_env = MultiAgentButtonsEnv(tester.rm_test_file, num_agents, tester.env_settings)
     if tester.experiment == 'buttons_hard':
         testing_env = HardMultiAgentButtonsEnv(tester.rm_test_file, num_agents, tester.env_settings)
+    if tester.experiment == "buttons_fair":
+        testing_env = FairMultiAgentButtonsEnv(tester.rm_test_file, num_agents, tester.env_settings)
     manager.load_assignment(agent_list)
     for i in range(num_agents):
         agent_list[i].reset_state()
@@ -384,6 +392,10 @@ def run_multi_agent_experiment(tester,num_agents,num_times,batch_size, buffer_si
         if tester.experiment == 'buttons_hard':
             testing_env = HardMultiAgentButtonsEnv(tester.rm_test_file, num_agents, tester.env_settings)
             num_states = testing_env.num_states
+        if tester.experiment == "buttons_fair":
+            testing_env = FairMultiAgentButtonsEnv(tester.rm_test_file, num_agents, tester.env_settings)
+            num_states = testing_env.num_states
+
 
         manager = Manager(joined_rm_file, set_list, event_list, 3, assignment_method)
 

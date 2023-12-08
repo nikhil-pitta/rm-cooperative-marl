@@ -91,6 +91,13 @@ if __name__ == "__main__":
         tester = hard_buttons_config(num_times, num_agents)
         run_multi_agent_experiment(tester, num_agents, num_times, 512, 5000, assignment_method)
 
+    if experiment == "lpdbuttons_fair":
+        from fair_buttons_config import fair_buttons_config
+        from experiments.ddqprm_lp import run_multi_agent_experiment
+        num_agents = 3
+        tester = fair_buttons_config(num_times, num_agents)
+        run_multi_agent_experiment(tester, num_agents, num_times, 512, 5000, assignment_method)
+
     if experiment == 'ihrl_buttons':
         from buttons_config import buttons_config
         from experiments.run_ihrl_experiment import run_ihrl_experiment
