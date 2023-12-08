@@ -46,8 +46,7 @@ def buttons_config(num_times, num_agents):
 
     tester = Tester(learning_params, testing_params)
     tester.step_unit = step_unit
-    # tester.total_steps = 250 * step_unit # 100 * step_unit
-    tester.total_steps = step_unit
+    tester.total_steps = 250 * step_unit # 100 * step_unit
     tester.min_steps = 1
     # tester.total_trajs = 250 * 
 
