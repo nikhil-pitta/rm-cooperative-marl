@@ -655,8 +655,6 @@ class MultiAgentButtonsEnv:
         self.plot_grid(pseudo_display, step, num_to_color, real_agent_traj)
         
     def plot_grid(self, grid, step, num_to_color, real_agent_traj):
-            
-   
         # Create a figure and axis
         fig, ax = plt.subplots()
 

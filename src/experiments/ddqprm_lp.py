@@ -63,7 +63,7 @@ def run_qlearning_task(epsilon,
     if tester.experiment == 'buttons':
         training_environments = []
         for i in range(num_agents):
-            training_environments.append(ButtonsEnv(agent_list[i].rm_file, i+1, tester.env_settings, manager))
+            training_environments.append(ButtonsEnv(agent_list[i].rm_file, i+1, tester.env_settings, manager, tester.config))
     if tester.experiment == "buttons_hard":
         training_environments = []
         for i in range(num_agents):
@@ -151,7 +151,7 @@ def run_qlearning_task(epsilon,
                                                                                             learning_params,
                                                                                             testing_params,
                                                                                             manager,
-                                                                                            show_print= (n == num_iters - 1))
+                                                                                            show_print = show_print and (n == num_iters - 1))
                 total_testing_reward += testing_reward
                 total_testing_steps += testing_steps
 
@@ -338,8 +338,10 @@ def run_multi_agent_qlearning_test(agent_list,
     #     wandb.log({f"Reward Achieved for Agent {i}": int(agent_list[i].is_task_complete), "Test Trajectory": tester.get_global_step()})
 
     if show_print:
-        print('Reward of {} achieved in {} steps. Current Trajectory: {} of {}'.format(testing_reward, step, tester.current_step, tester.total_steps))
         testing_env.log_traj(trajectory, tester.get_global_step())
+    
+    print('Reward of {} achieved in {} steps. Current Trajectory: {} of {}'.format(testing_reward, step, tester.current_step, tester.total_steps))
+
 
 
     return testing_reward, trajectory, step
@@ -429,7 +431,7 @@ def run_multi_agent_experiment(tester,num_agents,num_times,batch_size, buffer_si
 
     tester.agent_list = agent_list
 
-    plot_multi_agent_results(tester, num_agents)
+    # plot_multi_agent_results(tester, num_agents)
 
 def plot_multi_agent_results(tester, num_agents):
     """
@@ -481,3 +483,4 @@ def plot_multi_agent_results(tester, num_agents):
     plt.locator_params(axis='x', nbins=5)
 
     plt.show()
+
