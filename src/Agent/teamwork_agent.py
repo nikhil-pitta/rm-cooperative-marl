@@ -161,8 +161,7 @@ class Agent:
         # print("reward", self.rm.is_terminal_state(self.u), "isDone", self.rm.is_terminal_state(self.u))
         # if i >= 0:
         #     wandb.log({f"Reward Achieved for Agent {i}": int(reward), "Step": self.tester.get_global_step()})
-
-        if update_q_function == True:
+        if update_q_function == True and step < self.tester.early_stopping_point:
             self.curr_loss = self.update_q_function(learning_params, step)
         
         # if evaluate_critic_loss:

@@ -27,6 +27,7 @@ def run_qlearning_task(epsilon,
                         buffer_size,
                         manager,
                         train_reward_buildup,
+                        train_discount_reward_buildup,
                         show_print=True, num_iters=5):
     """
     This code runs one q-learning episode. q-functions, and accumulated reward values of agents
@@ -150,9 +151,10 @@ def run_qlearning_task(epsilon,
             total_testing_reward = 0 
             total_testing_steps = 0
             total_agent_reward = [0]*num_agents
+            total_testing_discounted_reward = 0
 
             for n in range(num_iters):
-                testing_reward, trajectory, testing_steps = run_multi_agent_qlearning_test(agent_list_copy,
+                testing_reward, testing_discounted_reward, trajectory, testing_steps = run_multi_agent_qlearning_test(agent_list_copy,
                                                                                             tester,
                                                                                             learning_params,
                                                                                             testing_params,
@@ -160,15 +162,18 @@ def run_qlearning_task(epsilon,
                                                                                             show_print= (n == num_iters - 1))
                 total_testing_reward += testing_reward
                 total_testing_steps += testing_steps
+                total_testing_discounted_reward += testing_discounted_reward
 
                 for k in range(num_agents):
                     total_agent_reward[k] += int(agent_list_copy[k].is_task_complete)
 
             wandb.log({'Episode Reward': (total_testing_reward + sum(train_reward_buildup))/ (num_iters + len(train_reward_buildup)), 
+                       'Discounted Episode Reward': (total_testing_discounted_reward + sum(train_discount_reward_buildup)) / (num_iters+len(train_discount_reward_buildup)),
                        "Episode Epsilon": epsilon, 
                        'Number of Steps Reward Achieved': total_testing_steps/num_iters, 
                        "Test Trajectory": tester.get_global_step()})
             train_reward_buildup.clear()
+            train_discount_reward_buildup.clear()
             
             for a_n in range(num_agents):
                 # if total_agent_reward[a_n] > 0:
@@ -211,6 +216,7 @@ def run_qlearning_task(epsilon,
         
         # If the agents has completed its task, reset it to its initial state.
         if all(agent.is_task_complete for agent in agent_list):
+            train_discount_reward_buildup.append(learning_params.gamma ** (t-1))
             train_reward_buildup.append(1)
             # FOR UCB, updating trajectory reward
             manager.update_rewards(manager.curr_assignment, 1)
@@ -229,11 +235,13 @@ def run_qlearning_task(epsilon,
         # checking the steps time-out
         if tester.stop_learning():
             train_reward_buildup.append(0)
+            train_discount_reward_buildup.append(0)
             broke_loop = True
             break
     
     if not broke_loop:
         train_reward_buildup.append(0)
+        train_discount_reward_buildup.append(0)
     return epsilon
 
 def run_multi_agent_qlearning_test(agent_list,
@@ -290,6 +298,7 @@ def run_multi_agent_qlearning_test(agent_list,
     # for i in range(num_agents):
     #     u_team[i] = agent_list[i].u
     testing_reward = 0
+    testing_discounted_reward = 0
 
     trajectory = []
 
@@ -312,6 +321,7 @@ def run_multi_agent_qlearning_test(agent_list,
         trajectory.append(s_team_next)
 
         testing_reward = testing_reward + r
+        testing_discounted_reward += (learning_params.gamma ** (t-1)) * r
 
         projected_l_dict = {}
         for i in range(num_agents):
@@ -350,7 +360,7 @@ def run_multi_agent_qlearning_test(agent_list,
         testing_env.log_traj(trajectory, tester.get_global_step())
 
 
-    return testing_reward, trajectory, step
+    return testing_reward, testing_discounted_reward, trajectory, step
 
 def run_multi_agent_experiment(tester,num_agents,num_times,batch_size, buffer_size, assignment_method, show_print_1=True):
     """
@@ -412,6 +422,7 @@ def run_multi_agent_experiment(tester,num_agents,num_times,batch_size, buffer_si
         # Task loop
         epsilon = learning_params.initial_epsilon
         train_reward_buildup = []
+        train_discount_reward_buildup = []
         while not tester.stop_learning():
             # num_episodes += 1
             # epsilon = epsilon*learning_params.exploration_fraction
@@ -423,6 +434,7 @@ def run_multi_agent_experiment(tester,num_agents,num_times,batch_size, buffer_si
                                 buffer_size,
                                 manager,
                                 train_reward_buildup,
+                                train_discount_reward_buildup,
                                 show_print=show_print_1)
 
         # for _ in tqdm(range(tester.total_steps)):

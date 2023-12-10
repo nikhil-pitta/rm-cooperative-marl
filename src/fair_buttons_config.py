@@ -31,7 +31,7 @@ def fair_buttons_config(num_times, num_agents):
 
     # configuration of learning params
     learning_params = LearningParameters()
-    learning_params.gamma = 0.9 # 0.9
+    learning_params.gamma = 0.8 # 0.9
     learning_params.alpha = 0.8
     learning_params.T = 50
     # learning_params.initial_epsilon = 0.0 # Set epsilon to zero to turn off epsilon-greedy exploration (only using boltzmann)
@@ -48,6 +48,7 @@ def fair_buttons_config(num_times, num_agents):
     tester.step_unit = step_unit
     tester.total_steps = 250 * step_unit # 100 * step_unit
     tester.min_steps = 1
+    tester.early_stopping_point = 100 * step_unit
     # tester.total_trajs = 250 * 
 
     tester.num_times = num_times

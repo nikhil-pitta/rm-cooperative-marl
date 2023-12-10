@@ -24,6 +24,7 @@ if __name__ == "__main__":
     wandb.init(project = experiment)
     wandb.define_metric("Test Trajectory")
     wandb.define_metric("Episode Reward", step_metric="Test Trajectory")
+    wandb.define_metric("Discounted Episode Reward", step_metric="Test Trajectory")
     wandb.define_metric("Episode Epsilon", step_metric="Test Trajectory")
     wandb.define_metric("Number of Steps Reward Achieved", step_metric="Test Trajectory")
     wandb.define_metric("Buttons Image", step_metric="Test Trajectory")

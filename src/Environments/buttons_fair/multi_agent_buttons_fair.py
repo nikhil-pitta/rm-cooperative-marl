@@ -567,9 +567,9 @@ class FairMultiAgentButtonsEnv:
 
         pseudo_display = np.zeros((self.Nr, self.Nc))
 
-        colors = ['red', 'green', 'yellow', 'gold']
+        colors = ['red', 'green', 'yellow']
         num_to_color = {i+1: color for i, color in enumerate(colors)}
-        num_to_color[-1] = 'black'
+        # num_to_color[-1] = 'black'
         num_to_color[0] = 'gray'
 
         color_to_num = {v: k for k, v in num_to_color.items()}
@@ -630,6 +630,7 @@ class FairMultiAgentButtonsEnv:
         ax.set_yticks([])
         ax.set_xticklabels([])
         ax.set_yticklabels([])
+
         ax.imshow(grid, cmap=cmap, aspect="equal")
 
         # plt.show()
