@@ -1,0 +1,8 @@
+batch_size: 512
+buffer_size: 5000
+eps_decay: 0.96
+learning_rate: 0.001
+adam_betas: 0.9
+num_layers: 2
+layer_size: 64
+cheat_thresh: 0.3

@@ -3,7 +3,7 @@ from tester.tester_params import TestingParameters
 from tester.learning_params import LearningParameters
 import os
 
-def fair_buttons_config(num_times, num_agents):
+def all_buttons_config(num_times, num_agents):
     """
     Function setting the experiment parameters and environment.
 
@@ -14,11 +14,11 @@ def fair_buttons_config(num_times, num_agents):
     """
     base_file_path = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
 
-    joint_rm_file = os.path.join(base_file_path, 'experiments', 'buttons_fair', 'team_buttons_fair_rm.txt')
+    joint_rm_file = os.path.join(base_file_path, 'experiments', 'buttons_all', 'team_buttons_all_rm.txt')
 
     local_rm_files = []
     for i in range(num_agents):
-        local_rm_string = os.path.join(base_file_path, 'experiments', 'buttons_fair', 'buttons_rm_agent_{}.txt'.format(i+1))
+        local_rm_string = os.path.join(base_file_path, 'experiments', 'buttons_all', 'buttons_rm_agent_{}.txt'.format(i+1))
         local_rm_files.append(local_rm_string)
 
     step_unit = 1000
@@ -38,7 +38,7 @@ def fair_buttons_config(num_times, num_agents):
 
     ######### for deepqbuttons #############
     learning_params.initial_epsilon = 1
-    learning_params.exploration_fraction = 0.98
+    learning_params.exploration_fraction = 0.96
     ######### for deepqbuttons #############
 
 
@@ -48,7 +48,7 @@ def fair_buttons_config(num_times, num_agents):
     tester.step_unit = step_unit
     tester.total_steps = 250 * step_unit # 100 * step_unit
     tester.min_steps = 1
-    tester.early_stopping_point = 250 * step_unit
+    tester.early_stopping_point = 75 * step_unit
     # tester.total_trajs = 250 * 
 
     tester.num_times = num_times
@@ -73,6 +73,6 @@ def fair_buttons_config(num_times, num_agents):
 
     tester.env_settings = env_settings
 
-    tester.experiment = 'buttons_fair'
+    tester.experiment = 'buttons_all'
 
     return tester

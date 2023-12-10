@@ -77,6 +77,8 @@ class Agent:
             n_layers=tester.config['num_layers'],
             size=tester.config['layer_size'],
         )
+
+        # print(tester.config['adam_betas'], type(tester.config['adam_betas']))
         
         self.optimizer = torch.optim.Adam([
                         {'params': self.Q.parameters(), 'lr': tester.config['learning_rate']},

@@ -13,6 +13,8 @@ from Environments.buttons_hard.buttons_hard import HardButtonsEnv
 from Environments.buttons_hard.multi_agent_buttons_hard import HardMultiAgentButtonsEnv
 from Environments.buttons_fair.buttons_fair import FairButtonsEnv
 from Environments.buttons_fair.multi_agent_buttons_fair import FairMultiAgentButtonsEnv
+from Environments.buttons_all.buttons_all import AllButtonsEnv
+from Environments.buttons_all.multi_agent_buttons_all import AllMultiAgentButtonsEnv
 import matplotlib.pyplot as plt
 import infrastructure.rm_utils as rm_builder
 from Manager.manager import Manager
@@ -75,7 +77,10 @@ def run_qlearning_task(epsilon,
         training_environments = []
         for i in range(num_agents):
             training_environments.append(FairButtonsEnv(agent_list[i].rm_file, i+1, tester.env_settings, manager))
-
+    if tester.experiment == "buttons_all":
+        training_environments = []
+        for i in range(num_agents):
+            training_environments.append(AllButtonsEnv(agent_list[i].rm_file, i+1, tester.env_settings, manager))
     broke_loop = False
 
     for t in range(num_steps):
@@ -117,8 +122,6 @@ def run_qlearning_task(epsilon,
                         agent_list[i].buffer.add(s, u, a, new_r, s_new, u2)
 
             if tester.get_current_step() > agent_list[i].buffer.max_: 
-                if type(l) == int:
-                    print(s, s_new, r, l)
                 agent_list[i].update_agent(s_new, r, l, learning_params, tester.get_current_step())
 
         # If enough steps have elapsed, test and save the performance of the agents.
@@ -284,6 +287,8 @@ def run_multi_agent_qlearning_test(agent_list,
         testing_env = HardMultiAgentButtonsEnv(tester.rm_test_file, num_agents, tester.env_settings)
     if tester.experiment == "buttons_fair":
         testing_env = FairMultiAgentButtonsEnv(tester.rm_test_file, num_agents, tester.env_settings)
+    if tester.experiment == "buttons_all":
+        testing_env = AllMultiAgentButtonsEnv(tester.rm_test_file, num_agents, tester.env_settings)
     manager.load_assignment(agent_list)
     for i in range(num_agents):
         agent_list[i].reset_state()
@@ -406,6 +411,9 @@ def run_multi_agent_experiment(tester,num_agents,num_times,batch_size, buffer_si
             num_states = testing_env.num_states
         if tester.experiment == "buttons_fair":
             testing_env = FairMultiAgentButtonsEnv(tester.rm_test_file, num_agents, tester.env_settings)
+            num_states = testing_env.num_states
+        if tester.experiment == "buttons_all":
+            testing_env = AllMultiAgentButtonsEnv(tester.rm_test_file, num_agents, tester.env_settings)
             num_states = testing_env.num_states
 
 

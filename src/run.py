@@ -102,6 +102,15 @@ if __name__ == "__main__":
         from experiments.ddqprm_lp import run_multi_agent_experiment
         num_agents = 3
         tester = hard_buttons_config(num_times, num_agents)
+
+
+          # # Hyperparameters with config file
+        with open('./configs/buttons_hard_config.yaml', 'r') as file:
+            config = yaml.safe_load(file)
+
+        # Giving tester access to all hyperparams
+        tester.exploration_fraction = config['eps_decay']
+        tester.config = config
         
         run_multi_agent_experiment(tester, num_agents, num_times, 512, 5000, assignment_method)
 
@@ -110,6 +119,33 @@ if __name__ == "__main__":
         from experiments.ddqprm_lp import run_multi_agent_experiment
         num_agents = 3
         tester = fair_buttons_config(num_times, num_agents)
+
+         # # Hyperparameters with config file
+        with open('./configs/buttons_fair_config.yaml', 'r') as file:
+            config = yaml.safe_load(file)
+
+        # Giving tester access to all hyperparams
+        tester.exploration_fraction = config['eps_decay']
+        tester.config = config
+
+
+        run_multi_agent_experiment(tester, num_agents, num_times, 512, 5000, assignment_method)
+
+    if experiment == "lpdbuttons_all":
+        from all_buttons_config import all_buttons_config
+        from experiments.ddqprm_lp import run_multi_agent_experiment
+        num_agents = 3
+        tester = all_buttons_config(num_times, num_agents)
+
+         # # Hyperparameters with config file
+        with open('./configs/buttons_all_config.yaml', 'r') as file:
+            config = yaml.safe_load(file)
+
+        # Giving tester access to all hyperparams
+        tester.exploration_fraction = config['eps_decay']
+        tester.config = config
+
+
         run_multi_agent_experiment(tester, num_agents, num_times, 512, 5000, assignment_method)
 
     if experiment == 'ihrl_buttons':
