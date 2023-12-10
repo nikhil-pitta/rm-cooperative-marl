@@ -21,7 +21,7 @@ class Actions(Enum):
 
 class ButtonsEnv:
 
-    def __init__(self, rm_file, agent_id, env_settings, manager):
+    def __init__(self, rm_file, agent_id, env_settings, manager, config):
         """
         Initialize environment.
 
@@ -43,6 +43,9 @@ class ButtonsEnv:
 
         # self.u = self.reward_machine.get_initial_state()
         self.last_action = -1 # Initialize last action to garbage value
+
+        # hyperparameters
+        self.config = config
 
     def _load_map(self):
         """
@@ -132,7 +135,7 @@ class ButtonsEnv:
 
         l = []
 
-        thresh = 0.3 #0.3
+        thresh = self.config['cheat_thresh'] #0.3
 
         if u == 1:
             if (row, col) == self.env_settings['yellow_button']:

@@ -4,6 +4,7 @@ import pickle
 from datetime import datetime
 import os
 import argparse
+import yaml
 
 if __name__ == "__main__":
 
@@ -67,6 +68,7 @@ if __name__ == "__main__":
     if experiment == 'buttons':
         from buttons_config import buttons_config
         from experiments.dqprm import run_multi_agent_experiment
+
         num_agents = 3 # Num agents must be 3 for this example
         tester = buttons_config(num_times, num_agents) # Get test object from config script
         run_multi_agent_experiment(tester, num_agents, num_times, show_print=True)
@@ -75,6 +77,7 @@ if __name__ == "__main__":
         from buttons_config import buttons_config
         from experiments.ddqprm import run_multi_agent_experiment
         num_agents = 3 # Num agents must be 3 for this example
+
         tester = buttons_config(num_times, num_agents) # Get test object from config script
         run_multi_agent_experiment(tester, num_agents, num_times, 512, 5000)
     
@@ -83,13 +86,23 @@ if __name__ == "__main__":
         from experiments.ddqprm_lp import run_multi_agent_experiment
         num_agents = 3 # Num agents must be 3 for this example
         tester = buttons_config(num_times, num_agents)
-        run_multi_agent_experiment(tester, num_agents, num_times, 512, 5000, assignment_method)
+
+        # # Hyperparameters with config file
+        with open('./configs/buttons_config.yaml', 'r') as file:
+            config = yaml.safe_load(file)
+
+        # Giving tester access to all hyperparams
+        tester.exploration_fraction = config['eps_decay']
+        tester.config = config
+
+        run_multi_agent_experiment(tester, num_agents, num_times, config['batch_size'], config['buffer_size'], assignment_method)
     
     if experiment == "lpdbuttons_hard":
         from hard_buttons_config import hard_buttons_config
         from experiments.ddqprm_lp import run_multi_agent_experiment
         num_agents = 3
         tester = hard_buttons_config(num_times, num_agents)
+        
         run_multi_agent_experiment(tester, num_agents, num_times, 512, 5000, assignment_method)
 
     if experiment == "lpdbuttons_fair":

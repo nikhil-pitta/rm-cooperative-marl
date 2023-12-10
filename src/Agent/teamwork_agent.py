@@ -11,6 +11,7 @@ from torch.distributions import MultivariateNormal
 from torch.distributions import Categorical
 from Manager.manager import Manager
 import wandb
+import yaml
 
 class Agent:
     """
@@ -67,19 +68,19 @@ class Agent:
         self.Q = ptu.build_mlp(
             input_size=2,
             output_size = len(self.actions),
-            n_layers=2,
-            size=64,
+            n_layers=tester.config['num_layers'],
+            size=tester.config['layer_size'],
         )
         self.Q_target = ptu.build_mlp(
             input_size=2,
             output_size = len(self.actions),
-            n_layers=2,
-            size=64,
+            n_layers=tester.config['num_layers'],
+            size=tester.config['layer_size'],
         )
         
         self.optimizer = torch.optim.Adam([
-                        {'params': self.Q.parameters(), 'lr': 0.001},
-                    ], betas=[0.9, 0.9])
+                        {'params': self.Q.parameters(), 'lr': tester.config['learning_rate']},
+                    ], betas=[tester.config['adam_betas'], tester.config['adam_betas']])
 
         self.update_target_network()
 
