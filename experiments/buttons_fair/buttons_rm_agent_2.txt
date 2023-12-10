@@ -1,0 +1,4 @@
+0 # initial state 
+(0, 1, 'by', 0) # Yellow button is pressed
+(1, 2, 'bg', 1) # Green button is pressed
+(2, 2, 'True', 0) # State 4 is an absorbing state
