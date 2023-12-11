@@ -18,7 +18,8 @@ def lpdbuttons_sweep():
     config = dict(wandb.config)
     tester = buttons_config(num_times, num_agents)
 
-    tester.exploration_fraction = config['eps_decay']
+    tester.learning_params.exploration_fraction = config['eps_decay']
+    tester.learning_params.gamma = config['discount_factor']
     tester.config = config
 
     run_multi_agent_experiment(tester, num_agents, num_times, config['batch_size'], config['buffer_size'], "multiply", show_print_1=False)
@@ -37,7 +38,8 @@ def lpdbuttons_hard_sweep():
     config = dict(wandb.config)
     tester = hard_buttons_config(num_times, num_agents)
 
-    tester.exploration_fraction = config['eps_decay']
+    tester.learning_params.exploration_fraction = config['eps_decay']
+    tester.learning_params.gamma = config['discount_factor']
     tester.config = config
 
     run_multi_agent_experiment(tester, num_agents, num_times, config['batch_size'], config['buffer_size'], "multiply", show_print_1=False)
@@ -62,17 +64,18 @@ if __name__ == "__main__":
 
     # using wandb sweep
     sweep_configuration = {
-        "method": "random",
+        "method": "bayes",
         "metric": {"goal": "maximize", "name": "Episode Reward"},
         "parameters": {
-            "batch_size": {"values": [512]},
-            "buffer_size": {"values": [5000]},
-            "eps_decay": {"values": [0.98]},
-            "learning_rate": {"values": [0.001]},
-            "adam_betas": {"values": [0.9]},
-            "num_layers": {"values": [2, 3]},
-            "layer_size": {"values": [64]},
-            "cheat_thresh": {"values": [0.3]}
+            "batch_size": {"values": [256, 512]},
+            "buffer_size": {"values": [4000, 5000, 6000, 7000]},
+            "eps_decay": {"values": [0.98, 0.97, 0.96, 0.95, 0.93]},
+            "learning_rate": {"values": [0.01, 0.001]},
+            "adam_betas": {"values": [0.9, 0.99]},
+            "num_layers": {"values": [2, 3, 4]},
+            "layer_size": {"values": [32, 64, 128]},
+            "cheat_thresh": {"values": [0.3, 0.35, 0.4]},
+            "discount_factor": {"values": [0.8, 0.83, 0.85, 0.87, 0.9]}
         },
     }
 

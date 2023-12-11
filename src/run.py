@@ -92,7 +92,8 @@ if __name__ == "__main__":
             config = yaml.safe_load(file)
 
         # Giving tester access to all hyperparams
-        tester.exploration_fraction = config['eps_decay']
+        tester.learning_params.exploration_fraction = config['eps_decay']
+        tester.learning_params.gamma = config['discount_factor']
         tester.config = config
 
         run_multi_agent_experiment(tester, num_agents, num_times, config['batch_size'], config['buffer_size'], assignment_method)
@@ -109,7 +110,8 @@ if __name__ == "__main__":
             config = yaml.safe_load(file)
 
         # Giving tester access to all hyperparams
-        tester.exploration_fraction = config['eps_decay']
+        tester.learning_params.exploration_fraction = config['eps_decay']
+        tester.learning_params.gamma = config['discount_factor']
         tester.config = config
         
         run_multi_agent_experiment(tester, num_agents, num_times, 512, 5000, assignment_method)
@@ -125,7 +127,8 @@ if __name__ == "__main__":
             config = yaml.safe_load(file)
 
         # Giving tester access to all hyperparams
-        tester.exploration_fraction = config['eps_decay']
+        tester.learning_params.exploration_fraction = config['eps_decay']
+        tester.learning_params.gamma = config['discount_factor']
         tester.config = config
 
 
@@ -142,7 +145,8 @@ if __name__ == "__main__":
             config = yaml.safe_load(file)
 
         # Giving tester access to all hyperparams
-        tester.exploration_fraction = config['eps_decay']
+        tester.learning_params.exploration_fraction = config['eps_decay']
+        tester.learning_params.gamma = config['discount_factor']
         tester.config = config
 
 

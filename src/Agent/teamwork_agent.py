@@ -238,7 +238,7 @@ class Agent:
         #     self.Q.parameters(), self.clip_grad_norm or float("inf")
         # )
         self.optimizer.step()
-
+    
         if step % self.target_network_update_period == 0:
             self.update_target_network()
 
