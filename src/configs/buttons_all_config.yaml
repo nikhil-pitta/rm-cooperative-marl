@@ -6,3 +6,4 @@ adam_betas: 0.9
 num_layers: 2
 layer_size: 64
 cheat_thresh: 0.3
+target_update: 100

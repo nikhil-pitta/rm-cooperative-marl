@@ -60,7 +60,7 @@ class Agent:
         self.total_local_reward = 0
         self.is_task_complete = 0
         self.batch_size = batch_size
-        self.target_network_update_period = 100
+        self.target_network_update_period = tester.config['target_update']
 
         self.buffer = ReplayBuffer(buffer_size)
 
