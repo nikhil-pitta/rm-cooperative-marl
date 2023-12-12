@@ -55,7 +55,7 @@ class HardButtonsEnv:
 
         self.s_i = initial_states[self.agent_id-1]
         self.objects = {}
-        self.objects[self.env_settings['goal_location']] = "g" # goal location
+        # self.objects[self.env_settings['goal_location']] = "g" # goal location
         self.objects[self.env_settings['yellow_button']] = 'yb'
         self.objects[self.env_settings['green_button']] = 'gb'
         self.objects[self.env_settings['red_button']] = 'rb'
@@ -134,29 +134,11 @@ class HardButtonsEnv:
         if u == 1:
             if (row, col) == self.env_settings['yellow_button']:
                 l.append('by')
-        if u == 2:
-            if (row, col) == self.env_settings['red_button']:
-                l.append('br')
-            elif np.random.random() <= thresh:
-                l.append('br')
         if u == 3:
-            if (row, col) == self.env_settings['goal_location']:
-                l.append('g')
-        if u == 5:
-            if (row, col) == self.env_settings['yellow_button']:
-                l.append('by')
-            elif np.random.random() <= thresh:
-                l.append('by')
-        if u == 6: 
-            if (row,col) == self.env_settings['green_button']:
-                l.append('bg')
-        if u == 8: 
             if (row, col) == self.env_settings['green_button']:
                 l.append('bg')
-            elif np.random.random() <= thresh:
-                l.append('bg')
-        if u == 9:
-            if (row,col) == self.env_settings['red_button']:
+        if u == 5:
+            if (row, col) == self.env_settings['red_button']:
                 l.append('br')
 
         return l
@@ -308,7 +290,7 @@ class HardButtonsEnv:
         display[self.env_settings['red_button']] = 9
         display[self.env_settings['green_button']] = 9
         display[self.env_settings['yellow_button']] = 9
-        display[self.env_settings['goal_location']] = 9
+        # display[self.env_settings['goal_location']] = 9
 
         # Display the location of the agent in the world
         row, col = self.get_state_description(s)

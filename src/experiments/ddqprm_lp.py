@@ -175,6 +175,8 @@ def run_qlearning_task(epsilon,
                        "Episode Epsilon": epsilon, 
                        'Number of Steps Reward Achieved': total_testing_steps/num_iters, 
                        "Test Trajectory": tester.get_global_step()})
+            if ((total_testing_reward + sum(train_reward_buildup))/ (num_iters + len(train_reward_buildup))) > 0.99:
+                tester.early_stopping_point = -1
             train_reward_buildup.clear()
             train_discount_reward_buildup.clear()
             

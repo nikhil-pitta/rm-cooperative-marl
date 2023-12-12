@@ -68,7 +68,7 @@ class HardMultiAgentButtonsEnv:
 
         # Populate the map with markers
         self.objects = {}
-        self.objects[self.env_settings['goal_location']] = "g" # goal location
+        # self.objects[self.env_settings['goal_location']] = "g" # goal location
         self.objects[self.env_settings['yellow_button']] = 'yb'
         self.objects[self.env_settings['green_button']] = 'gb'
         self.objects[self.env_settings['red_button']] = 'rb'
@@ -356,15 +356,43 @@ class HardMultiAgentButtonsEnv:
         if u == 0:
             if (row1,col1) == self.env_settings['yellow_button'] or (row2,col2) == self.env_settings['yellow_button'] or (row3,col3) == self.env_settings['yellow_button']:
                 l.append('by')
-        if u == 1:
-            if (row1, col1) == self.env_settings['green_button'] or (row2, col2) == self.env_settings['green_button'] or (row3, col3) == self.env_settings['green_button']:
+            if (row1,col1) == self.env_settings['green_button'] or (row2,col2) == self.env_settings['green_button'] or (row3,col3) == self.env_settings['green_button']:
                 l.append('bg')
+            if (row1,col1) == self.env_settings['red_button'] or (row2,col2) == self.env_settings['red_button'] or (row3,col3) == self.env_settings['red_button']:
+                l.append('br')
+        if u == 1:
+            if (row1,col1) == self.env_settings['green_button'] or (row2,col2) == self.env_settings['green_button'] or (row3,col3) == self.env_settings['green_button']:
+                l.append('bg')
+            if (row1,col1) == self.env_settings['red_button'] or (row2,col2) == self.env_settings['red_button'] or (row3,col3) == self.env_settings['red_button']:
+                l.append('br')
         if u == 2:
-            if (row3, col3) == self.env_settings['red_button'] or (row2, col2) == self.env_settings['red_button'] or (row1, col1) == self.env_settings['red_button']:
+            if (row1,col1) == self.env_settings['yellow_button'] or (row2,col2) == self.env_settings['yellow_button'] or (row3,col3) == self.env_settings['yellow_button']:
+                l.append('by')
+            if (row1,col1) == self.env_settings['red_button'] or (row2,col2) == self.env_settings['red_button'] or (row3,col3) == self.env_settings['red_button']:
                 l.append('br')
         if u == 3:
-            if (row1, col1) == self.env_settings['goal_location'] or (row2, col2) == self.env_settings['goal_location'] or (row3, col3) == self.env_settings['goal_location']:
-                l.append('g')
+            if (row1,col1) == self.env_settings['yellow_button'] or (row2,col2) == self.env_settings['yellow_button'] or (row3,col3) == self.env_settings['yellow_button']:
+                l.append('by')
+            if (row1,col1) == self.env_settings['green_button'] or (row2,col2) == self.env_settings['green_button'] or (row3,col3) == self.env_settings['green_button']:
+                l.append('bg')
+        if u == 4:
+            if (row1,col1) == self.env_settings['red_button'] or (row2,col2) == self.env_settings['red_button'] or (row3,col3) == self.env_settings['red_button']:
+                l.append('br')
+        if u == 5:
+            if (row1,col1) == self.env_settings['green_button'] or (row2,col2) == self.env_settings['green_button'] or (row3,col3) == self.env_settings['green_button']:
+                l.append('bg')
+        if u == 6:
+            if (row1,col1) == self.env_settings['red_button'] or (row2,col2) == self.env_settings['red_button'] or (row3,col3) == self.env_settings['red_button']:
+                l.append('br')
+        if u == 7:
+            if (row1,col1) == self.env_settings['yellow_button'] or (row2,col2) == self.env_settings['yellow_button'] or (row3,col3) == self.env_settings['yellow_button']:
+                l.append('by')
+        if u == 8:
+            if (row1,col1) == self.env_settings['green_button'] or (row2,col2) == self.env_settings['green_button'] or (row3,col3) == self.env_settings['green_button']:
+                l.append('bg')
+        if u == 9:
+            if (row1,col1) == self.env_settings['yellow_button'] or (row2,col2) == self.env_settings['yellow_button'] or (row3,col3) == self.env_settings['yellow_button']:
+                l.append('by')
 
         return l
 
@@ -549,7 +577,7 @@ class HardMultiAgentButtonsEnv:
         display[self.env_settings['red_button']] = 9
         display[self.env_settings['green_button']] = 9
         display[self.env_settings['yellow_button']] = 9
-        display[self.env_settings['goal_location']] = 9
+        # display[self.env_settings['goal_location']] = 9
 
         for loc in self.red_tiles:
             display[loc] = 8
@@ -570,7 +598,7 @@ class HardMultiAgentButtonsEnv:
 
         pseudo_display = np.zeros((self.Nr, self.Nc))
 
-        colors = ['red', 'green', 'yellow', 'gold']
+        colors = ['red', 'green', 'yellow']
         num_to_color = {i+1: color for i, color in enumerate(colors)}
         num_to_color[-1] = 'black'
         num_to_color[0] = 'gray'
@@ -585,12 +613,12 @@ class HardMultiAgentButtonsEnv:
         display[self.env_settings['red_button']] = 9
         display[self.env_settings['green_button']] = 9
         display[self.env_settings['yellow_button']] = 9
-        display[self.env_settings['goal_location']] = 9
+        # display[self.env_settings['goal_location']] = 9
 
         pseudo_display[self.env_settings['red_button']] = color_to_num['red']
         pseudo_display[self.env_settings['green_button']] = color_to_num['green']
         pseudo_display[self.env_settings['yellow_button']] = color_to_num['yellow']
-        pseudo_display[self.env_settings['goal_location']] = color_to_num['gold']
+        # pseudo_display[self.env_settings['goal_location']] = color_to_num['gold']
 
 
         # Display the agents
