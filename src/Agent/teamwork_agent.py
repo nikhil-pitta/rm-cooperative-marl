@@ -132,6 +132,14 @@ class Agent:
             a = ptu.to_numpy(a).squeeze(0).item()
         
         return self.s, a
+    
+    def update_agent_rm(self, label):
+        for event in label: # there really should only be one event in the label provided to an individual agent
+            # Update the agent's RM
+            u2 = self.rm.get_next_state(self.u, event)
+            self.u = u2
+        
+    
 
     def update_agent(self, s_new, reward, label, learning_params, step, update_q_function=True, i=-1, evaluate_critic_loss=False):
         """

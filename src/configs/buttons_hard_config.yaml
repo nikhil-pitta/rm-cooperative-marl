@@ -5,5 +5,6 @@ learning_rate: 0.001
 adam_betas: 0.9
 num_layers: 2
 layer_size: 128
-cheat_thresh: 0.40
+cheat_thresh: 0.30
 discount_factor: 0.87
+target_update: 100

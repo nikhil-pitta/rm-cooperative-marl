@@ -123,6 +123,8 @@ def run_qlearning_task(epsilon,
 
             if tester.get_current_step() > agent_list[i].buffer.max_: 
                 agent_list[i].update_agent(s_new, r, l, learning_params, tester.get_current_step())
+            else:
+                agent_list[i].update_agent_rm(l)
 
         # If enough steps have elapsed, test and save the performance of the agents.
         if testing_params.test and tester.get_current_step() % testing_params.test_freq == 0:
@@ -175,8 +177,8 @@ def run_qlearning_task(epsilon,
                        "Episode Epsilon": epsilon, 
                        'Number of Steps Reward Achieved': total_testing_steps/num_iters, 
                        "Test Trajectory": tester.get_global_step()})
-            if ((total_testing_reward + sum(train_reward_buildup))/ (num_iters + len(train_reward_buildup))) > 0.99:
-                tester.early_stopping_point = -1
+            # if (total_testing_discounted_reward + sum(train_discount_reward_buildup)) / (num_iters+len(train_discount_reward_buildup)) >= 0.24:
+            #     tester.early_stopping_point = -1
             train_reward_buildup.clear()
             train_discount_reward_buildup.clear()
             

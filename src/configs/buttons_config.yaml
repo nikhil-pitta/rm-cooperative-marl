@@ -7,3 +7,5 @@ num_layers: 2
 layer_size: 64
 cheat_thresh: 0.3
 target_update: 100
+discount_factor: 0.9
+

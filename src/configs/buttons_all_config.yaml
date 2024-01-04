@@ -1,9 +1,11 @@
 batch_size: 512
 buffer_size: 5000
-eps_decay: 0.97
+eps_decay: 0.98
 learning_rate: 0.001
 adam_betas: 0.9
 num_layers: 2
 layer_size: 64
 cheat_thresh: 0.3
-discount_factor: 0.85
+target_update: 100
+discount_factor: 0.9
+
